@@ -7,9 +7,7 @@ import (
 	"github.com/ishrivatsa/user/users"
 )
 
-var identityKey = "id"
-var mySigningKey = []byte("mySuperSecretPhrase")
-
+//
 func handleRequest() {
 
 	// Init Router
