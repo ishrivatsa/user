@@ -46,7 +46,7 @@ zipkin
 
    ```sudo docker cp users.json {container_id}:/```
     
-   mongoimport --db acmefit --collection users --file users.json -u mongoadmin -p secret --authenticationDatabase=admin
+   ```mongoimport --db acmefit --collection users --file users.json -u mongoadmin -p secret --authenticationDatabase=admin```
 
 7. Run the user service 
   
