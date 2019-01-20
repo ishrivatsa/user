@@ -100,7 +100,7 @@ func LoginUser(c *gin.Context) {
 	error := c.ShouldBindJSON(&user)
 
 	if error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Field Name(s)/ Value(s)"})
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Field Name(s)"})
 		return
 	}
 
@@ -109,8 +109,7 @@ func LoginUser(c *gin.Context) {
 	error = collection.Find(bson.M{"username": user.Username}).One(&user)
 
 	if error != nil {
-		//message := "User " + error.Error()
-		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": "Invalid Username"})
+		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Username"})
 		return
 	}
 

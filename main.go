@@ -23,7 +23,7 @@ func handleRequest() {
 		authGroup.DELETE("/users/:id", users.DeleteUser)
 	}
 
-	router.Run(":8080")
+	router.Run(":8088")
 }
 
 func main() {
