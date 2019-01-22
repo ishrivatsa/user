@@ -44,11 +44,21 @@ zipkin
 
 6. Execute this command to import the ```users.json``` file 
 
-   ```sudo docker cp users.json {container_id}:/```
+   ```sudo docker cp users.json {mongodb_container_id}:/```
+
+
+7. Login into the mongodb container 
+
+    
+    ```sudo docker exec -it {mongodb_container_id} bash```
+
+8. Import the users file into the database 
+
     
    ```mongoimport --db acmefit --collection users --file users.json -u mongoadmin -p secret --authenticationDatabase=admin```
 
-7. Run the user service 
+
+9. Run the user service 
   
    ```./bin/user```
 
