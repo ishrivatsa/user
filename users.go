@@ -1,4 +1,4 @@
-package users
+package main
 
 import (
 	"crypto/sha1"
