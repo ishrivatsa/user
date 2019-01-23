@@ -20,15 +20,15 @@ zipkin
 2. You will notice the following directory structure
 
 ``` 
+├── db.go
 ├── go.mod
 ├── go.sum
 ├── main.go
 ├── README.md
-├── users
-│   ├── db.go
-│   ├── service.go
-│   └── users.go
+├── service.go
+├── users.go
 └── users.json
+
 ```
 
 3. Set GOPATH appropriately as per the documentation - https://github.com/golang/go/wiki/SettingGOPATH
