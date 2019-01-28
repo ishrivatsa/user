@@ -47,7 +47,6 @@ zipkin as docker container (optional)
 
 
 7. Login into the mongodb container 
-
     
     ```sudo docker exec -it {mongodb_container_id} bash```
 
@@ -57,18 +56,20 @@ zipkin as docker container (optional)
 
 9. Export USER_IP/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
     
-    ``` export USERS_IP=0.0.0.0 ```
-    ``` export USERS_PORT=:8087```
+    ``` 
+    export USERS_IP=0.0.0.0
+    export USERS_PORT=:8087
+    ```
 
 10. Also, export ENV variables related to the database
 
     ```
     export USERS_DB_USER=mongoadmin
     export USERS_DB_SECRET=secret
-    export USERD_DB_IP=0.0.0.0
+    export USERS_DB_IP=0.0.0.0
     ```
 
-10. Run the user service 
+11. Run the user service 
   
    ```./bin/user```
 
