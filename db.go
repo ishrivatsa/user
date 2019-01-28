@@ -18,19 +18,19 @@ var (
 	db *mgo.Database
 
 	collection *mgo.Collection
-)
 
-const (
-	// MongoDBUrl is the default mongodb url that will be used to connect to the
-	// database.
-	//MongoDBUrl = "mongodb://dbapp:VMware1@0.0.0.0:27017/user?authSource=admin"
-	MongoDBUrl = "mongodb://mongoadmin:secret@0.0.0.0:27017/?authSource=admin"
+	user   = os.Getenv("USERS_DB_USER")
+	secret = os.Getenv("USERS_DB_SECRET")
+	dbIP   = os.Getenv("USERS_DB_IP")
+
+	mongoDBUrl = fmt.Sprintf("mongodb://%s:%s@%s:27017/?authSource=admin", user, secret, dbIP)
 )
 
 // ConnectDB accepts name of database and collection as a string
 func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo.Session {
 
-	Session, error := mgo.Dial(MongoDBUrl)
+	Session, error := mgo.Dial(mongoDBUrl)
+
 	if error != nil {
 		fmt.Printf(error.Error())
 		logger.Fatalf(error.Error())

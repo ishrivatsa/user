@@ -68,12 +68,12 @@ func handleRequest() {
 	//flag.Parse()
 
 	// Set default values if ENV variables are not set
-	port := GetEnv("USER_PORT", "8086")
-	ip := GetEnv("USER_IP", "0.0.0.0")
+	port := GetEnv("USERS_PORT", "8086")
+	ip := GetEnv("USERS_IP", "0.0.0.0")
 
 	ipPort := ip + ":" + port
 
-	logger.Info("Starting user service at " + ip + " on " + ipPort)
+	logger.Infof("Starting user service at %s on %s", ip, port)
 
 	router.Run(ipPort)
 

@@ -6,16 +6,15 @@ These instructions will allow you to run user service
 
 ## Requirements
 
-Go (golang) : 1.11+
+Go (golang) : 1.11.2
 
-mongodb 
+mongodb as docker container
 
-zipkin
+zipkin as docker container (optional)
 
 ## Instructions
 
 1. Clone this repository 
-
 
 2. You will notice the following directory structure
 
@@ -53,13 +52,24 @@ zipkin
     ```sudo docker exec -it {mongodb_container_id} bash```
 
 8. Import the users file into the database 
-
     
    ```mongoimport --db acmefit --collection users --file users.json -u mongoadmin -p secret --authenticationDatabase=admin```
 
+9. Export USER_IP/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
+    
+    ``` export USERS_IP=0.0.0.0 ```
+    ``` export USERS_PORT=:8087```
 
-9. Run the user service 
+10. Also, export ENV variables related to the database
+
+    ```export USERS_DB_USER=mongoadmin
+    export USERS_DB_SECRET=secret
+    export USERD_DB_IP=0.0.0.0```
+
+10. Run the user service 
   
    ```./bin/user```
+
+
 
 ### Additional Info
