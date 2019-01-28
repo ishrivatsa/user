@@ -62,9 +62,11 @@ zipkin as docker container (optional)
 
 10. Also, export ENV variables related to the database
 
-    ```export USERS_DB_USER=mongoadmin
+    ```
+    export USERS_DB_USER=mongoadmin
     export USERS_DB_SECRET=secret
-    export USERD_DB_IP=0.0.0.0```
+    export USERD_DB_IP=0.0.0.0
+    ```
 
 10. Run the user service 
   
