@@ -15,4 +15,5 @@ RUN mkdir app
 #Copy the executable uilt from the previous image
 COPY --from=builder /go/src/github.com/vmwarecloudadvocacy/user/user /app
 WORKDIR /app
+EXPOSE 80
 CMD ["./user"]
