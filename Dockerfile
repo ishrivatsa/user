@@ -16,4 +16,5 @@ RUN mkdir app
 COPY --from=builder /go/src/github.com/vmwarecloudadvocacy/user/user /app
 WORKDIR /app
 EXPOSE 80
+EXPOSE 8081
 CMD ["./user"]
