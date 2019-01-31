@@ -18,16 +18,19 @@ var (
 	db *mgo.Database
 
 	collection *mgo.Collection
-
-	user   = os.Getenv("USERS_DB_USER")
-	secret = os.Getenv("USERS_DB_SECRET")
-	dbIP   = os.Getenv("USERS_DB_IP")
-
-	mongoDBUrl = fmt.Sprintf("mongodb://%s:%s@%s:27017/?authSource=admin", user, secret, dbIP)
 )
 
 // ConnectDB accepts name of database and collection as a string
 func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo.Session {
+
+	dbUsername := os.Getenv("USERS_DB_USERNAME")
+	dbSecret := os.Getenv("USERS_DB_SECRET")
+
+	// Get ENV variable or set to default value
+	dbIP := GetEnv("USERS_DB_ENDPOINT", "0.0.0.0")
+	dbPort := GetEnv("USERS_DB_PORT", "27017")
+
+	mongoDBUrl := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", dbUsername, dbSecret, dbIP, dbPort)
 
 	Session, error := mgo.Dial(mongoDBUrl)
 
