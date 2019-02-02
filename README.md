@@ -54,19 +54,19 @@ zipkin as docker container (optional)
     
    ```mongoimport --db acmefit --collection users --file users.json -u mongoadmin -p secret --authenticationDatabase=admin```
 
-9. Export USER_IP/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
+9. Export USER_HOST/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
     
     ``` 
-    export USERS_IP=0.0.0.0
-    export USERS_PORT=:8087
+    export USERS_HOST=0.0.0.0
+    export USERS_PORT=:8081
     ```
 
 10. Also, export ENV variables related to the database
 
     ```
-    export USERS_DB_USER=mongoadmin
-    export USERS_DB_SECRET=secret
-    export USERS_DB_IP=0.0.0.0
+    export USERS_DB_USERNAME=mongoadmin
+    export USERS_DB_PASSWORD=secret
+    export USERS_DB_HOST=0.0.0.0
     ```
 
 11. Run the user service 

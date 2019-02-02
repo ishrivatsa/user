@@ -68,8 +68,8 @@ func handleRequest() {
 	//flag.Parse()
 
 	// Set default values if ENV variables are not set
-	port := GetEnv("USERS_PORT", "8086")
-	ip := GetEnv("USERS_IP", "0.0.0.0")
+	port := GetEnv("USERS_PORT", "8081")
+	ip := GetEnv("USERS_HOST", "0.0.0.0")
 
 	ipPort := ip + ":" + port
 

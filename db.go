@@ -24,10 +24,10 @@ var (
 func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo.Session {
 
 	dbUsername := os.Getenv("USERS_DB_USERNAME")
-	dbSecret := os.Getenv("USERS_DB_SECRET")
+	dbSecret := os.Getenv("USERS_DB_PASSWORD")
 
 	// Get ENV variable or set to default value
-	dbIP := GetEnv("USERS_DB_ENDPOINT", "0.0.0.0")
+	dbIP := GetEnv("USERS_DB_HOST", "0.0.0.0")
 	dbPort := GetEnv("USERS_DB_PORT", "27017")
 
 	mongoDBUrl := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin", dbUsername, dbSecret, dbIP, dbPort)
