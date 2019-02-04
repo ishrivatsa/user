@@ -9,12 +9,12 @@ db.users.insertMany([
 ]);
 
 db.catalog.insertMany([
-    {"name":"Fitness special","description":"Limited edition fitness watch","picture":"/static/images/weave1.jpg","price":249.99000549316406,"tags":["watch"]}
-    ,{"name":"Infuser water bottle","description":"For all those althelets out there, a perfect bottle to enrich you","picture":"/static/images/puma_1.jpeg","price":34.59000015258789,"tags":["bottle"]}
-    ,{"name":"Classic Tread Mill","description":"Classic Tread Mill","picture":"/static/images/youtube_1.jpeg","price":800.0,"tags":["running"]}
-    ,{"name":"Baby Tracker","description":"Baby Tracker","picture":"/static/images/catsocks_1.jpg","price":99.0,"tags":["baby"]}
-    ,{"name":"Smart watch","description":"Smartest Watch Ever","picture":"/static/images/cross_1.jpeg","price":169.59,"tags":["watch"]}
-    ,{"name":"Running shoes","description":"Best shoes","picture":"/static/images/cross_1.jpeg","price":120.00,"tags":["running"]}
-    ,{"name":"Weights","description":"Lift weights","picture":"/static/images/cross_1.jpeg","price":49.99,"tags":["weight"]}
-    ,{"name":"Folding Bicycle","description":"Bicycle that fold","picture":"/static/images/cross_1.jpeg","price":299.99,"tags":["bicycle"]}
+    {"name":"Yoga Mat","description":"Limited edition Mat","picture":"/static/images/yogamat_square.jpg","price":249.99000549316406,"tags":["mat"]}
+    ,{"name":"Water bottle","description":"For all those althelets out there, a perfect bottle to enrich you","picture":"/static/images/bottle_square.jpg","price":34.59000015258789,"tags":["bottle"]}
+    ,{"name":"Tread Mill","description":"Tread Mill","picture":"/static/images/treadmill_square.jpg","price":800.0,"tags":["running"]}
+    ,{"name":"Red Pant","description":"Special Item on Sale","picture":"/static/images/redpants_square.jpg","price":99.0,"tags":["clothing"]}
+    ,{"name":"Smart watch","description":"Smartest Watch Ever","picture":"/static/images/smartwatch_square.jpg","price":399.59,"tags":["watch"]}
+    ,{"name":"Running shoes","description":"Best shoes","picture":"/static/images/shoes_square.jpg","price":120.00,"tags":["running"]}
+    ,{"name":"Weights","description":"Lift weights","picture":"/static/images/weights_square.jpg","price":49.99,"tags":["weight"]}
+    ,{"name":"Fit Bike","description":"Bicycle that fold","picture":"/static/images/bicycle_square.jpg","price":499.99,"tags":["bicycle"]}
 ]);
