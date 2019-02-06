@@ -9,12 +9,12 @@ db.users.insertMany([
 ]);
 
 db.catalog.insertMany([
-    {"name":"Yoga Mat","description":"Limited edition Mat","picture":"/static/images/yogamat_square.jpg","price":249.99000549316406,"tags":["mat"]}
-    ,{"name":"Water bottle","description":"For all those althelets out there, a perfect bottle to enrich you","picture":"/static/images/bottle_square.jpg","price":34.59000015258789,"tags":["bottle"]}
-    ,{"name":"Tread Mill","description":"Tread Mill","picture":"/static/images/treadmill_square.jpg","price":800.0,"tags":["running"]}
-    ,{"name":"Red Pant","description":"Special Item on Sale","picture":"/static/images/redpants_square.jpg","price":99.0,"tags":["clothing"]}
-    ,{"name":"Smart watch","description":"Smartest Watch Ever","picture":"/static/images/smartwatch_square.jpg","price":399.59,"tags":["watch"]}
-    ,{"name":"Running shoes","description":"Best shoes","picture":"/static/images/shoes_square.jpg","price":120.00,"tags":["running"]}
-    ,{"name":"Weights","description":"Lift weights","picture":"/static/images/weights_square.jpg","price":49.99,"tags":["weight"]}
-    ,{"name":"Fit Bike","description":"Bicycle that fold","picture":"/static/images/bicycle_square.jpg","price":499.99,"tags":["bicycle"]}
+    {"name":"Yoga Mat","shortdescription":"Limited Edition Mat","description":"Limited edition yoga mat","imageurl1":"/static/images/yogamat_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg","price":62.5,"tags":["mat"]}
+    ,{"name":"Water Bottle","shortdescription":"Best water bottle ever","description":"For all those athletes out there, a perfect bottle to enrich you","imageurl1":"/static/images/bottle_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg","price":34.9900016784668,"tags":["bottle"]}
+    ,{"name":"Tread Mill","shortdescription":"Tread Mill","description":"Tread Mill","imageurl1":"/static/images/treadmill_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg","price":800.0,"tags":["running"]}
+    ,{"name":"Smart Watch","shortdescription":"Smart watch","description":"Smart watch to keep you fit","imageurl1":"/static/images/smartwatch_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg","price":399.5899963378906,"tags":["watch"]}
+    ,{"name":"Red Pant","shortdescription":"Red pant", "description":"Special Item on Sale","imageurl1":"/static/images/redpants_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg", "price":99.0,"tags":["clothing"]}
+    ,{"name":"Running shoes","shortdescription":"Running Shoes", "description":"Best shoes","imageurl1":"/static/images/shoes_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg", "price":120.00,"tags":["running"]}
+    ,{"name":"Weights","shortdescription":"Weights","description":"Lift weights","imageurl1":"/static/images/weights_square.jpg","imageurl2":"/static/images/yogamat_square.jpg","imageurl3":"/static/images/bottle_square.jpg", "price":49.99,"tags":["weight"]}
+    ,{"name":"Fit Bike","shortdescription":"Bicycle", "description":"Amazing Bicycle","imageurl1":"/static/images/bicycle_square.jpg","imageurl2":"/static/images/bottle_square.jpg","imageurl3":"/static/images/bottle_square.jpg", "price":499.99,"tags":["bicycle"]}
 ]);
