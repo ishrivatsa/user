@@ -20,48 +20,39 @@ zipkin as docker container (optional)
 
 ``` 
 ├── db.go
+├── Dockerfile
 ├── go.mod
 ├── go.sum
 ├── main.go
 ├── README.md
 ├── service.go
-├── users.go
-└── users.json
+├── user-db
+│   ├── Dockerfile
+│   ├── seed.js
+│   └── users.json
+└── users.go
 
 ```
 
 3. Set GOPATH appropriately as per the documentation - https://github.com/golang/go/wiki/SettingGOPATH
+   Also, run ``` export GO111MODULE=on ```
 
 4. Build the go application from the root of the folder
 
 ``` go build -o bin/user ```
 
-5. Run a mongodb docker container 
+5. Run a mongodb docker container
 
-   ```sudo docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret mongo```
+```sudo docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db```
 
-
-6. Execute this command to import the ```users.json``` file 
-
-   ```sudo docker cp users.json {mongodb_container_id}:/```
-
-
-7. Login into the mongodb container 
-    
-    ```sudo docker exec -it {mongodb_container_id} bash```
-
-8. Import the users file into the database 
-    
-   ```mongoimport --db acmefit --collection users --file users.json -u mongoadmin -p secret --authenticationDatabase=admin```
-
-9. Export USER_HOST/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
+6. Export USER_HOST/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
     
     ``` 
     export USERS_HOST=0.0.0.0
-    export USERS_PORT=:8081
+    export USERS_PORT=8081
     ```
 
-10. Also, export ENV variables related to the database
+7. Also, export ENV variables related to the database
 
     ```
     export USERS_DB_USERNAME=mongoadmin
@@ -69,10 +60,9 @@ zipkin as docker container (optional)
     export USERS_DB_HOST=0.0.0.0
     ```
 
-11. Run the user service 
-  
-   ```./bin/user```
+8. Run the user service
 
+```./bin/user```
 
 
 ### Additional Info
