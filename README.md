@@ -65,4 +65,104 @@ zipkin as docker container (optional)
 ```./bin/user```
 
 
-### Additional Info
+## Additional Info 
+   
+There are pre-created users loaded into the database. 
+
+
+## API
+
+> **Returns the list of all users**
+   
+   ``` **'/users' methods=['GET'] ** ```
+
+    Expected JSON Response 
+
+    ```
+    {
+    "data": [
+        {
+            "username": "walter",
+            "email": "walter@acmefitness.com",
+            "firstname": "Walter",
+            "lastname": "White",
+            "id": "5c61ed848d891bd9e8016898"
+        },
+        {
+            "username": "dwight",
+            "email": "dwight@acmefitness.com",
+            "firstname": "Dwight",
+            "lastname": "Schrute",
+            "id": "5c61ed848d891bd9e8016899"
+        }
+    ]}
+    ```
+
+
+> **Returns details about a specific user id**
+   
+    ``` **'/users/:id'** methods=['GET'] ** ```
+
+    Expected JSON response
+
+    ```
+    {
+        "data": {
+            "username": "dwight",
+            "email": "dwight@acmefitness.com",
+            "firstname": "Dwight",
+            "lastname": "Schrute",
+            "id": "5c61ed848d891bd9e8016899"
+        },
+        "status": 200
+    }
+    ```
+
+
+
+> **Authenticate and Login user**
+
+    ``` **'/login/'** methods=['POST'] ```
+
+    Expected JSON Body with the request
+     
+     ``` { 
+           "username": "username",
+           "password": "password"
+     }```
+
+    Expected JSON Response - Currently the token is the user ID.
+
+    ```
+    {
+        "status": 200,
+        "token": "5c61ed848d891bd9e8016899"
+    }
+
+    ```
+
+> **Register/Create new user**
+
+    ```**'/register'** methods=['POST']```
+
+    Expected JSON body with Request
+
+    ```
+    {
+    	"username":"peterp",
+    	"password":"vmware1!",
+    	"firstname":"amazing",
+    	"lastname":"spiderman",
+    	"email":"peterp@acmefitness.com"
+    }
+    ```
+
+    Expected JSON Response 
+
+    ```
+    {
+        "message": "User created successfully!",
+        "resourceId": "5c61ef891d41c8de20281dd2",
+        "status": 201
+    }
+    ```
