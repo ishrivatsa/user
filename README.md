@@ -39,11 +39,11 @@ zipkin as docker container (optional)
 
 4. Build the go application from the root of the folder
 
-``` go build -o bin/user ```
+   ``` go build -o bin/user ```
 
 5. Run a mongodb docker container
 
-```sudo docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db```
+  ```sudo docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e      MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db```
 
 6. Export USER_HOST/USER_PORT (port and ip) as ENV variable. You may choose any used port as per your environment setup.
     
@@ -62,7 +62,7 @@ zipkin as docker container (optional)
 
 8. Run the user service
 
-```./bin/user```
+   ```./bin/user```
 
 
 ## Additional Info 
@@ -78,7 +78,6 @@ There are pre-created users loaded into the database.
 
     Expected JSON Response 
 
-    ```
     {
     "data": [
         {
@@ -96,16 +95,15 @@ There are pre-created users loaded into the database.
             "id": "5c61ed848d891bd9e8016899"
         }
     ]}
-    ```
+    
 
 
 > **Returns details about a specific user id**
    
-    **'/users/:id' methods=['GET']**
+   **'/users/:id' methods=['GET']**
 
     Expected JSON response
 
-    ```
     {
         "data": {
             "username": "dwight",
@@ -116,13 +114,11 @@ There are pre-created users loaded into the database.
         },
         "status": 200
     }
-    ```
-
 
 
 > **Authenticate and Login user**
-
-    **'/login/' methods=['POST']**
+   
+   **'/login/' methods=['POST']**
 
     Expected JSON Body with the request
      
@@ -143,11 +139,10 @@ There are pre-created users loaded into the database.
 
 > **Register/Create new user**
 
-    **'/register' methods=['POST']**
+   **'/register' methods=['POST']**
 
     Expected JSON body with Request
 
-    ```
     {
     	"username":"peterp",
     	"password":"vmware1!",
@@ -155,14 +150,14 @@ There are pre-created users loaded into the database.
     	"lastname":"spiderman",
     	"email":"peterp@acmefitness.com"
     }
-    ```
+    
 
     Expected JSON Response 
 
-    ```
+    
     {
         "message": "User created successfully!",
         "resourceId": "5c61ef891d41c8de20281dd2",
         "status": 201
     }
-    ```
+    
