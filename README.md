@@ -69,6 +69,9 @@ zipkin as docker container (optional)
    
 There are pre-created users loaded into the database. 
 
+Username(s): eric, dwight, han, phoebe
+Password: vmware1!
+
 
 ## API
 
@@ -122,20 +125,18 @@ There are pre-created users loaded into the database.
 
     Expected JSON Body with the request
      
-     ``` { 
+     { 
            "username": "username",
            "password": "password"
-     }```
+     }
 
     Expected JSON Response - Currently the token is the user ID.
 
-    ```
+    
     {
         "status": 200,
         "token": "5c61ed848d891bd9e8016899"
     }
-
-    ```
 
 > **Register/Create new user**
 
