@@ -74,7 +74,7 @@ There are pre-created users loaded into the database.
 
 > **Returns the list of all users**
    
-   ``` **'/users' methods=['GET'] ** ```
+   **'/users' methods=['GET']**
 
     Expected JSON Response 
 
@@ -101,7 +101,7 @@ There are pre-created users loaded into the database.
 
 > **Returns details about a specific user id**
    
-    ``` **'/users/:id'** methods=['GET'] ** ```
+    **'/users/:id' methods=['GET']**
 
     Expected JSON response
 
@@ -122,7 +122,7 @@ There are pre-created users loaded into the database.
 
 > **Authenticate and Login user**
 
-    ``` **'/login/'** methods=['POST'] ```
+    **'/login/' methods=['POST']**
 
     Expected JSON Body with the request
      
@@ -143,7 +143,7 @@ There are pre-created users loaded into the database.
 
 > **Register/Create new user**
 
-    ```**'/register'** methods=['POST']```
+    **'/register' methods=['POST']**
 
     Expected JSON body with Request
 
