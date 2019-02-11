@@ -69,8 +69,9 @@ zipkin as docker container (optional)
    
 There are pre-created users loaded into the database. 
 
-Username(s): eric, dwight, han, phoebe
-Password: vmware1!
+**Username(s): eric, dwight, han, phoebe**  
+
+**Password: vmware1!  **
 
 
 ## API
