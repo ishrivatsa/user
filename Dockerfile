@@ -11,10 +11,14 @@ ENV CGO_ENABLED=0
 RUN go build -o user .
 
 FROM alpine
+RUN apk update && apk add mongodb
 RUN mkdir app
 #Copy the executable uilt from the previous image
 COPY --from=builder /go/src/github.com/vmwarecloudadvocacy/user/user /app
+COPY entrypoint/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN ln -s usr/local/bin/docker-entrypoint.sh /app
 WORKDIR /app
 EXPOSE 80
 EXPOSE 8081
-CMD ["./user"]
+ENTRYPOINT ["docker-entrypoint.sh"]
