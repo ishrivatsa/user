@@ -13,7 +13,7 @@ RUN go build -o user .
 FROM alpine
 RUN apk update && apk add mongodb
 RUN mkdir app
-#Copy the executable uilt from the previous image
+#Copy the executable from the previous image
 COPY --from=builder /go/src/github.com/vmwarecloudadvocacy/user/user /app
 COPY entrypoint/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
