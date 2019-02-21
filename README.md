@@ -21,6 +21,8 @@ zipkin as docker container (optional)
 ``` 
 ├── db.go
 ├── Dockerfile
+├── entrypoint
+│   └── docker-entrypoint.sh
 ├── go.mod
 ├── go.sum
 ├── main.go
