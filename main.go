@@ -3,10 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/gin-gonic/gin"
+	opentracing "github.com/opentracing/opentracing-go"
+	stdopentracing "github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
+	jaeger "github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
+	jaegercfg "github.com/uber/jaeger-client-go/config"
 )
 
 var (
@@ -21,6 +27,29 @@ const (
 	dbName         = "acmefit"
 	collectionName = "users"
 )
+
+func initJaeger(service string) (opentracing.Tracer, io.Closer) {
+	tracerIP := GetEnv("TRACER_IP", "0.0.0.0")
+	tracerPort := GetEnv("TRACER_PORT", "14268")
+
+	logger.Infof("Created tracer at http://%s:%s/api/traces", tracerIP, tracerPort)
+
+	cfg := &jaegercfg.Configuration{
+		Sampler: &jaegercfg.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &jaegercfg.ReporterConfig{
+			LogSpans:          true,
+			CollectorEndpoint: "http://" + tracerIP + ":" + tracerPort + "/api/traces",
+		},
+	}
+	tracer, closer, err := cfg.New(service, config.Logger(jaeger.StdLogger))
+	if err != nil {
+		panic(fmt.Sprintf("ERROR: cannot init Jaeger: %v\n", err))
+	}
+	return tracer, closer
+}
 
 // GetEnv accepts the ENV as key and a default string
 // If the lookup returns false then it uses the default string else it leverages the value set in ENV variable
@@ -90,11 +119,18 @@ func main() {
 	}
 
 	dbsession := ConnectDB(dbName, collectionName, logger)
+
 	logger.Infof("Successfully connected to database %s", dbName)
+
+	tracer, closer := initJaeger("user")
+
+	stdopentracing.SetGlobalTracer(tracer)
 
 	handleRequest()
 
 	CloseDB(dbsession, logger)
+
+	defer closer.Close()
 
 	defer f.Close()
 

@@ -9,6 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo/bson"
+	stdopentracing "github.com/opentracing/opentracing-go"
+	tracelog "github.com/opentracing/opentracing-go/log"
 )
 
 func calculatePassHash(pass, salt string) string {
@@ -22,10 +24,21 @@ func calculatePassHash(pass, salt string) string {
 func GetUsers(c *gin.Context) {
 	var users []UserResponse
 
+	tracer := stdopentracing.GlobalTracer()
+
+	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
+
+	userSpan := tracer.StartSpan("db_get_users", stdopentracing.FollowsFrom(userSpanCtx))
+	defer userSpan.Finish()
+
 	error := collection.Find(nil).All(&users)
 
 	if error != nil {
 		message := "Users " + error.Error()
+		userSpan.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", error.Error()),
+		)
 		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": message})
 		return
 	}
@@ -37,7 +50,20 @@ func GetUsers(c *gin.Context) {
 func GetUser(c *gin.Context) {
 	var user UserResponse
 
+	tracer := stdopentracing.GlobalTracer()
+
+	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
+
+	userSpan := tracer.StartSpan("db_get_user", stdopentracing.FollowsFrom(userSpanCtx))
+
+	defer userSpan.Finish()
+
 	userID := c.Param("id")
+
+	productSpan.LogFields(
+		tracelog.String("event", "string-format"),
+		tracelog.String("user.id", userID),
+	)
 
 	if bson.IsObjectIdHex(userID) {
 
@@ -45,15 +71,26 @@ func GetUser(c *gin.Context) {
 
 		if error != nil {
 			message := "User " + error.Error()
+			userSpan.LogFields(
+				tracelog.String("event", "error"),
+				tracelog.String("message", error.Error()),
+			)
+			userSpan.SetTag("http.status_code", http.StatusNotFound)
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": message})
 			return
 		}
 	} else {
 		message := "Incorrect Format for UserID"
+		userSpan.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", message),
+		)
+		userSpan.SetTag("http.status_code", http.StatusBadRequest)
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
 		return
 	}
 
+	userSpan.SetTag("http.status_code", http.StatusOK)
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": user})
 }
 
@@ -61,6 +98,14 @@ func GetUser(c *gin.Context) {
 func RegisterUser(c *gin.Context) {
 
 	var user User
+
+	tracer := stdopentracing.GlobalTracer()
+
+	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
+
+	userSpan := tracer.StartSpan("db_login_user", stdopentracing.FollowsFrom(userSpanCtx))
+
+	defer userSpan.Finish()
 
 	error := c.ShouldBindJSON(&user)
 
@@ -73,6 +118,10 @@ func RegisterUser(c *gin.Context) {
 
 	if error != nil {
 		message := "User " + error.Error()
+		userSpan.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", error.Error()),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
 		return
 	}
@@ -86,16 +135,29 @@ func RegisterUser(c *gin.Context) {
 
 	if error != nil {
 		message := "User " + error.Error()
+		userSpan.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", error.Error()),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
 		return
 	}
 
+	userSpan.SetTag("http.status_code", http.StatusCreated)
 	c.JSON(http.StatusCreated, gin.H{"status": http.StatusCreated, "message": "User created successfully!", "resourceId": user.ID})
 
 }
 
 func LoginUser(c *gin.Context) {
 	var user User
+
+	tracer := stdopentracing.GlobalTracer()
+
+	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
+
+	userSpan := tracer.StartSpan("db_login_user", stdopentracing.FollowsFrom(userSpanCtx))
+
+	defer userSpan.Finish()
 
 	error := c.ShouldBindJSON(&user)
 
@@ -109,15 +171,26 @@ func LoginUser(c *gin.Context) {
 	error = collection.Find(bson.M{"username": user.Username}).One(&user)
 
 	if error != nil {
+		userSpan.SetTag("http.status_code", http.StatusNotFound)
+		userSpan.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", error.Error()),
+		)
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Username"})
 		return
 	}
 
 	if user.Password != calculatePassHash(userpass, user.Salt) {
+		userSpan.SetTag("http.status_code", http.StatusNotFound)
+		userSpan.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", error.Error()),
+		)
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Password"})
 		return
 	}
 
+	userSpan.SetTag("http.status_code", http.StatusOK)
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "token": user.ID})
 
 }
