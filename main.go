@@ -29,7 +29,7 @@ const (
 )
 
 func initJaeger(service string) (opentracing.Tracer, io.Closer) {
-	tracerIP := GetEnv("TRACER_IP", "0.0.0.0")
+	tracerIP := GetEnv("TRACER_HOST", "localhost")
 	tracerPort := GetEnv("TRACER_PORT", "14268")
 
 	logger.Infof("Created tracer at http://%s:%s/api/traces", tracerIP, tracerPort)
