@@ -28,7 +28,7 @@ func GetUsers(c *gin.Context) {
 
 	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
 
-	userSpan := tracer.StartSpan("db_get_users", stdopentracing.FollowsFrom(userSpanCtx))
+	userSpan := tracer.StartSpan("db_get_users", stdopentracing.ChildOf(userSpanCtx))
 	defer userSpan.Finish()
 
 	error := collection.Find(nil).All(&users)
@@ -54,13 +54,13 @@ func GetUser(c *gin.Context) {
 
 	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
 
-	userSpan := tracer.StartSpan("db_get_user", stdopentracing.FollowsFrom(userSpanCtx))
+	userSpan := tracer.StartSpan("db_get_user", stdopentracing.ChildOf(userSpanCtx))
 
 	defer userSpan.Finish()
 
 	userID := c.Param("id")
 
-	productSpan.LogFields(
+	userSpan.LogFields(
 		tracelog.String("event", "string-format"),
 		tracelog.String("user.id", userID),
 	)
@@ -103,7 +103,7 @@ func RegisterUser(c *gin.Context) {
 
 	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
 
-	userSpan := tracer.StartSpan("db_login_user", stdopentracing.FollowsFrom(userSpanCtx))
+	userSpan := tracer.StartSpan("db_login_user", stdopentracing.ChildOf(userSpanCtx))
 
 	defer userSpan.Finish()
 
@@ -155,7 +155,7 @@ func LoginUser(c *gin.Context) {
 
 	userSpanCtx, _ := tracer.Extract(stdopentracing.HTTPHeaders, stdopentracing.HTTPHeadersCarrier(c.Request.Header))
 
-	userSpan := tracer.StartSpan("db_login_user", stdopentracing.FollowsFrom(userSpanCtx))
+	userSpan := tracer.StartSpan("db_login_user", stdopentracing.ChildOf(userSpanCtx))
 
 	defer userSpan.Finish()
 
