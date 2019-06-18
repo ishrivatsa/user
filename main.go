@@ -31,6 +31,9 @@ const (
 func initJaeger(service string) (opentracing.Tracer, io.Closer) {
 	tracerIP := GetEnv("TRACER_HOST", "localhost")
 	tracerPort := GetEnv("TRACER_PORT", "14268")
+	
+	agentIP := GetEnv("JAEGER_AGENT_HOST", "localhost")
+        agentPort := GetEnv("JAEGER_AGENT_PORT", "6831")
 
 	logger.Infof("Created tracer at http://%s:%s/api/traces", tracerIP, tracerPort)
 
@@ -41,7 +44,8 @@ func initJaeger(service string) (opentracing.Tracer, io.Closer) {
 		},
 		Reporter: &jaegercfg.ReporterConfig{
 			LogSpans:          true,
-			CollectorEndpoint: "http://" + tracerIP + ":" + tracerPort + "/api/traces",
+                        LocalAgentHostPort: agentIP + ":" + agentPort,
+//			CollectorEndpoint: "http://" + tracerIP + ":" + tracerPort + "/api/traces",
 		},
 	}
 	tracer, closer, err := cfg.New(service, config.Logger(jaeger.StdLogger))
