@@ -35,9 +35,9 @@ func initJaeger(service string) (opentracing.Tracer, io.Closer) {
 	//tracerPort := GetEnv("TRACER_PORT", "14268")
 	
 	agentIP := GetEnv("JAEGER_AGENT_HOST", "localhost")
-    agentPort := GetEnv("JAEGER_AGENT_PORT", "6831")
+        agentPort := GetEnv("JAEGER_AGENT_PORT", "6831")
 
-	logger.Infof("Sending traces to %s %s", tracerIP, tracerPort)
+	logger.Infof("Sending traces to %s %s", agentIP, agentPort)
 
 	cfg := &jaegercfg.Configuration{
 		Sampler: &jaegercfg.SamplerConfig{
