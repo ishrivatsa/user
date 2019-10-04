@@ -19,20 +19,29 @@ zipkin as docker container (optional)
 2. You will notice the following directory structure
 
 ``` 
-├── db.go
+├── cmd
+│   └── users
+│       └── main.go
 ├── Dockerfile
 ├── entrypoint
 │   └── docker-entrypoint.sh
 ├── go.mod
 ├── go.sum
-├── main.go
+├── internal
+│   ├── auth
+│   │   └── auth.go
+│   ├── db
+│   │   └── db.go
+│   └── service
+│       └── service.go
+├── pkg
+│   └── logger
+│       └── logger.go
 ├── README.md
-├── service.go
-├── user-db
-│   ├── Dockerfile
-│   ├── seed.js
-│   └── users.json
-└── users.go
+└── user-db
+    ├── Dockerfile
+    ├── seed.js
+    └── users.json
 
 ```
 
@@ -41,7 +50,7 @@ zipkin as docker container (optional)
 
 4. Build the go application from the root of the folder
 
-   ``` go build -o bin/user ```
+   ``` go build -o bin/user ./cmd/users```
 
 5. Run a mongodb docker container
 
@@ -133,12 +142,12 @@ There are pre-created users loaded into the database.
            "password": "password"
      }
 
-    Expected JSON Response - Currently the token is the user ID.
+    Expected JSON Response - The token here is JWT. This has to be sent as ```Authorization Bearer <TOKEN>``` token with every subsequent request.
 
     
     {
         "status": 200,
-        "token": "5c61ed848d891bd9e8016899"
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImVyaWMiLCJleHAiOjE1NzAyMjkyOTl9.64S2amtZ4-cp0kbrGLqexyMJ4f0PrnSXKMc-xvNqoqs"
     }
 
 > **Register/Create new user**
