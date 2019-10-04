@@ -1,4 +1,4 @@
-package main
+package db
 
 import (
 	"fmt"
@@ -6,7 +6,9 @@ import (
 
 	"github.com/globalsign/mgo"
 	"github.com/sirupsen/logrus"
-)
+	"github.com/vmwarecloudadvocacy/user/pkg/logger"
+//	"github.com/vmwarecloudadvocacy/user/pkg/logger"
+) 
 
 var (
 	// Session stores mongo session
@@ -15,10 +17,22 @@ var (
 	// Mongo stores the mongodb connection string information
 	mongo *mgo.DialInfo
 
-	db *mgo.Database
+	DB *mgo.Database
 
-	collection *mgo.Collection
+	Collection *mgo.Collection
 )
+
+
+// GetEnv accepts the ENV as key and a default string
+// If the lookup returns false then it uses the default string else it leverages the value set in ENV variable
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	
+	logger.Logger.Info("Setting default values for ENV variable " + key)
+	return fallback
+}
 
 // ConnectDB accepts name of database and collection as a string
 func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo.Session {
@@ -40,14 +54,14 @@ func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo
 		os.Exit(1)
 	}
 
-	db = Session.DB(dbName)
+	DB = Session.DB(dbName)
 
-	error = db.Session.Ping()
+	error = DB.Session.Ping()
 	if error != nil {
 		logger.Errorf("Unable to connect to database %s", dbName)
 	}
 
-	collection = db.C(collectionName)
+	Collection = DB.C(collectionName)
 
 	logger.Info("Connected to database and the collection")
 
