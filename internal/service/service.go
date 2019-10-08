@@ -117,30 +117,14 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	// Declare the expiration time of the token
-	// Here the expiration is 5 minutes
-	expirationTime := time.Now().Add(5 * time.Minute)
-
-	// Create the JWT claims, which includes the username and expiry time
-	claims := &auth.Claims{
-		Username: user.Username,
-		StandardClaims: jwt.StandardClaims{
-			// The expiry time is in milliseconds
-			ExpiresAt: expirationTime.Unix(),
-		},
-	}
-
-	// Declare the token with the algorithm used for signing, and the claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	// Create the JWT string
-	tokenString, err := token.SignedString(auth.JwtKey)
-	if err != nil {
-		// If there is an error in creating the JWT return an internal server error
+	tokenPair, err := generateToken(user.Username)
+	if err !=nil {
+		// Return if there is an error in creating the JWT return an internal server error
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Could not generate token"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "token": tokenString})
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": tokenPair})
 
 }
 
@@ -165,3 +149,43 @@ func DeleteUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "User deleted successfully!"})
 }
+
+func generateToken(username string) (map[string]string, error) {
+
+	// Declare the expiration time of the access token
+	// Here the expiration is 5 minutes
+	expirationTimeAccessToken := time.Now().Add(5 * time.Minute).Unix()
+
+	// Declare the token with the algorithm used for signing, and the claims
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["Username"] = username
+	claims["exp"] = expirationTimeAccessToken
+	claims["sub"] = 1
+
+	// Create the JWT string
+	tokenString, err := token.SignedString(auth.AtJwtKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create Refresh token, this will be used to get new access token.
+	refreshToken := jwt.New(jwt.SigningMethodHS256)
+
+	expirationTimeRefreshToken := time.Now().Add(15 * time.Minute).Unix()
+
+	rtClaims := refreshToken.Claims.(jwt.MapClaims)
+	rtClaims["sub"] = 1
+	rtClaims["exp"] = expirationTimeRefreshToken
+
+	rt, err := refreshToken.SignedString(auth.RtJwtKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]string{
+		"access_token": tokenString,
+		"refresh_token": rt,
+	}, nil
+}
+

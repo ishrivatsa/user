@@ -2,7 +2,6 @@ package auth
 
 import (
 	"crypto/sha1"
-	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -18,16 +17,13 @@ import (
 )
 
 var (
-	ErrNoCustomerInResponse = errors.New("Response has no matching customer")
 	ErrMissingField         = "Error missing %v"
-	// Create the JWT key used to create the signature
-    JwtKey = []byte("my_secret_key")
+	// AtJwtKey is used to create the Access token signature
+	AtJwtKey = []byte("my_secret_key")
+	// RtJwtKey is used to create the refresh token signature
+	RtJwtKey = []byte("my_secret_key_2")
+	
 )
-
-type Claims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
-}
 
 type registerRequest struct {
 	Username  string `json:"username"`
@@ -97,7 +93,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims := &Claims{}
+		claims := jwt.MapClaims{}
 
 		extractedToken := strings.Split(clientToken, "Bearer ")
 
@@ -105,7 +101,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if len(extractedToken) == 2 {
 			clientToken = strings.TrimSpace(extractedToken[1])
 		} else {
-			logger.Logger.Errorf("Incorrect Format of Authz Token")
+			logger.Logger.Errorf("Incorrect Format of Authn Token")
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Format of Authorization Token "})
 			c.Abort()
 			return
@@ -113,7 +109,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// Parse the claims
 		parsedToken, err := jwt.ParseWithClaims(clientToken, claims, func(token *jwt.Token) (interface{}, error) {
-			return JwtKey, nil
+			return AtJwtKey, nil
 		})
 
 		if err != nil {
