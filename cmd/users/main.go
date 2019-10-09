@@ -25,14 +25,12 @@ func handleRequest() {
 	// Init Router
 	router := gin.New()
 
-	//router.Use(authMiddleware())
-
 	nonAuthGroup := router.Group("/") 
 	{
 		nonAuthGroup.POST("/register", service.RegisterUser)
 		nonAuthGroup.POST("/login",service.LoginUser)
 		nonAuthGroup.POST("/refresh-token", service.RefreshAccessToken)
-		nonAuthGroup.POST("/validate-token", service.ValidateToken)
+		nonAuthGroup.POST("/verify-token", service.VerifyAuthToken)
 	}
 
 	authGroup := router.Group("/")

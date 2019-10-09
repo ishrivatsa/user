@@ -13,14 +13,43 @@ import (
 
 )
 
-func ValidateToken(c *gin.Context) {
 
+func VerifyAuthToken(c *gin.Context) {
+
+	var accessTokenRequest auth.AccessTokenRequestBody
+
+	err := c.ShouldBindJSON(&accessTokenRequest)
+	if err != nil {
+		message := err.Error()
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
+		return
+	}
+
+	valid, _, key, err := auth.ValidateToken(accessTokenRequest.AccessToken)
+	if valid == false || err != nil {
+		message := err.Error()
+		logger.Logger.Errorf(message)
+		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Key. User Not Authorized"})
+		c.Abort()
+		return
+	}
+	
+	// Make sure that key passed was not a refresh token
+	if key != "signin_1" {
+		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Provide a valid access token"})
+		c.Abort()
+		return
+	}
+
+	// Send StatusOK to indicate the access token was valid
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Token Valid. User Authorized"})
 }
+
 
 func RefreshAccessToken(c *gin.Context) {
 
 	//var user auth.UserResponse
-	var tokenRequest auth.TokenRequestBody
+	var tokenRequest auth.RefreshTokenRequestBody
 
 	err := c.ShouldBindJSON(&tokenRequest)	
 	if err != nil {
@@ -29,22 +58,16 @@ func RefreshAccessToken(c *gin.Context) {
 		return
 	}
 
-	valid, id, err := auth.ValidateRefreshToken(tokenRequest.RefreshToken)
-	if valid == false && err != nil {
-		message := err.Error()
-		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
-		c.Abort()
-		return
-	}
-
-	if valid == false {
+	valid, id, _, err := auth.ValidateToken(tokenRequest.RefreshToken)
+	if valid == false || err != nil {
 		message := err.Error()
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": message})
 		c.Abort()
 		return
 	}
-
-	if id != "" {
+   
+	// TODO: Fix this - Check for valid user ID
+	if valid == true && id != "" {
 
 		newToken, _ := auth.GenerateAccessToken("eric", id)
 		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": newToken, "refresh_token": tokenRequest.RefreshToken})	
@@ -159,7 +182,7 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	accessToken, refreshToken, err := auth.GenerateToken(user.Username, user.ID.Hex())
+	accessToken, refreshToken, err := auth.GenerateTokenPair(user.Username, user.ID.Hex())
 	if err != nil || accessToken == "" || refreshToken == "" {
 		// Return if there is an error in creating the JWT return an internal server error
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Could not generate token"})

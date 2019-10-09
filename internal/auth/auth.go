@@ -25,8 +25,12 @@ var (
 	
 )
 
-type TokenRequestBody struct {
+type RefreshTokenRequestBody struct {
 	RefreshToken string `json:"refresh_token"`
+}
+
+type AccessTokenRequestBody struct {
+	AccessToken string `json:"access_token"`
 }
 
 type registerRequest struct {
@@ -138,7 +142,8 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-func GenerateToken(username string, uuid string) (string, string, error) {
+// GenerateTokenPair creates and returns a new set of access_token and refresh_token. 
+func GenerateTokenPair(username string, uuid string) (string, string, error) {
 
 	tokenString, err := GenerateAccessToken(username, uuid)
 	if err !=nil {
@@ -147,6 +152,7 @@ func GenerateToken(username string, uuid string) (string, string, error) {
 
 	// Create Refresh token, this will be used to get new access token.
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
+	refreshToken.Header["kid"] = "signin_2"
 
 	expirationTimeRefreshToken := time.Now().Add(15 * time.Minute).Unix()
 
@@ -162,28 +168,44 @@ func GenerateToken(username string, uuid string) (string, string, error) {
 	return  tokenString, refreshTokenString, nil
 }
 
-func ValidateRefreshToken(reqRefreshToken string) (bool, string, error) {
+
+// ValidateToken is used to validate both access_token and refresh_token. It is done based on the "Key ID" provided by the JWT
+func ValidateToken(tokenString string) (bool, string, string, error) {
+
+	var key []byte
+
+	var keyID string
 
 	claims := jwt.MapClaims{}
 
-	refreshToken, err := jwt.ParseWithClaims(reqRefreshToken, claims, func(token *jwt.Token) (interface{},error) {
-		return RtJwtKey, nil
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{},error) {
+		
+		keyID = token.Header["kid"].(string)
+		// If the "kid" (Key ID) is equal to signin_1, then it is compared against access_token secret key, else if it
+		// is equal to signin_2 , it is compared against refresh_token secret key.
+		if keyID == "signin_1" {
+			key = AtJwtKey
+		} else if keyID == "signin_2" {
+			key = RtJwtKey
+		}
+		return key, nil	
 	})
 
+	// Check if signatures are valid. 
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			logger.Logger.Errorf("Invalid Token Signature")
-			return false, "", err
+			return false, "", keyID, err
 		}
-		return false, "", err
+		return false, "", keyID,err
 	}
 
-	if !refreshToken.Valid {
+	if !token.Valid {
 		logger.Logger.Errorf("Invalid Token")
-		return false, "", err
+		return false, "", keyID, err
 	}
 
-	return true, claims["sub"].(string), nil
+	return true, claims["sub"].(string), keyID, nil
 }
 
 func GenerateAccessToken(username string, uuid string) (string, error) {
@@ -193,6 +215,7 @@ func GenerateAccessToken(username string, uuid string) (string, error) {
 
 	// Declare the token with the algorithm used for signing, and the claims
 	token := jwt.New(jwt.SigningMethodHS256)
+	token.Header["kid"] = "signin_1"
 	claims := token.Claims.(jwt.MapClaims)
 	claims["Username"] = username
 	claims["exp"] = expirationTimeAccessToken
