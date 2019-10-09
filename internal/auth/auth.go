@@ -25,6 +25,10 @@ var (
 	
 )
 
+type TokenRequestBody struct {
+	RefreshToken string `json:"refresh_token"`
+}
+
 type registerRequest struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"`
@@ -132,4 +136,73 @@ func AuthMiddleware() gin.HandlerFunc {
 		
 		c.Next()
 	}
+}
+
+func GenerateToken(username string, uuid string) (string, string, error) {
+
+	tokenString, err := GenerateAccessToken(username, uuid)
+	if err !=nil {
+		return "", "", err
+	}
+
+	// Create Refresh token, this will be used to get new access token.
+	refreshToken := jwt.New(jwt.SigningMethodHS256)
+
+	expirationTimeRefreshToken := time.Now().Add(15 * time.Minute).Unix()
+
+	rtClaims := refreshToken.Claims.(jwt.MapClaims)
+	rtClaims["sub"] = uuid
+	rtClaims["exp"] = expirationTimeRefreshToken
+
+	refreshTokenString, err := refreshToken.SignedString(RtJwtKey)
+	if err != nil {
+		return "", "", err
+	}
+
+	return  tokenString, refreshTokenString, nil
+}
+
+func ValidateRefreshToken(reqRefreshToken string) (bool, string, error) {
+
+	claims := jwt.MapClaims{}
+
+	refreshToken, err := jwt.ParseWithClaims(reqRefreshToken, claims, func(token *jwt.Token) (interface{},error) {
+		return RtJwtKey, nil
+	})
+
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			logger.Logger.Errorf("Invalid Token Signature")
+			return false, "", err
+		}
+		return false, "", err
+	}
+
+	if !refreshToken.Valid {
+		logger.Logger.Errorf("Invalid Token")
+		return false, "", err
+	}
+
+	return true, claims["sub"].(string), nil
+}
+
+func GenerateAccessToken(username string, uuid string) (string, error) {
+	// Declare the expiration time of the access token
+	// Here the expiration is 5 minutes
+	expirationTimeAccessToken := time.Now().Add(5 * time.Minute).Unix()
+
+	// Declare the token with the algorithm used for signing, and the claims
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["Username"] = username
+	claims["exp"] = expirationTimeAccessToken
+	claims["sub"] = uuid
+
+	// Create the JWT string
+	tokenString, err := token.SignedString(AtJwtKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }

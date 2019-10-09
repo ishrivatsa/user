@@ -1,10 +1,10 @@
 package service
 
 import (
+	//"fmt"
 	"net/http"
-	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	//jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/globalsign/mgo/bson"
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
@@ -13,6 +13,48 @@ import (
 
 )
 
+func ValidateToken(c *gin.Context) {
+
+}
+
+func RefreshAccessToken(c *gin.Context) {
+
+	//var user auth.UserResponse
+	var tokenRequest auth.TokenRequestBody
+
+	err := c.ShouldBindJSON(&tokenRequest)	
+	if err != nil {
+		message := err.Error()
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
+		return
+	}
+
+	valid, id, err := auth.ValidateRefreshToken(tokenRequest.RefreshToken)
+	if valid == false && err != nil {
+		message := err.Error()
+		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
+		c.Abort()
+		return
+	}
+
+	if valid == false {
+		message := err.Error()
+		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": message})
+		c.Abort()
+		return
+	}
+
+	if id != "" {
+
+		newToken, _ := auth.GenerateAccessToken("eric", id)
+		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": newToken, "refresh_token": tokenRequest.RefreshToken})	
+		c.Abort()
+		return
+	}
+
+	c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Error Found "})
+
+}
 
 // GetUsers accepts a context and returns all the users in json format
 func GetUsers(c *gin.Context) {
@@ -117,14 +159,14 @@ func LoginUser(c *gin.Context) {
 		return
 	}
 
-	tokenPair, err := generateToken(user.Username)
-	if err !=nil {
+	accessToken, refreshToken, err := auth.GenerateToken(user.Username, user.ID.Hex())
+	if err != nil || accessToken == "" || refreshToken == "" {
 		// Return if there is an error in creating the JWT return an internal server error
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Could not generate token"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": tokenPair})
+	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": accessToken, "refresh_token": refreshToken})
 
 }
 
@@ -150,42 +192,6 @@ func DeleteUser(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "User deleted successfully!"})
 }
 
-func generateToken(username string) (map[string]string, error) {
 
-	// Declare the expiration time of the access token
-	// Here the expiration is 5 minutes
-	expirationTimeAccessToken := time.Now().Add(5 * time.Minute).Unix()
 
-	// Declare the token with the algorithm used for signing, and the claims
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["Username"] = username
-	claims["exp"] = expirationTimeAccessToken
-	claims["sub"] = 1
-
-	// Create the JWT string
-	tokenString, err := token.SignedString(auth.AtJwtKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Create Refresh token, this will be used to get new access token.
-	refreshToken := jwt.New(jwt.SigningMethodHS256)
-
-	expirationTimeRefreshToken := time.Now().Add(15 * time.Minute).Unix()
-
-	rtClaims := refreshToken.Claims.(jwt.MapClaims)
-	rtClaims["sub"] = 1
-	rtClaims["exp"] = expirationTimeRefreshToken
-
-	rt, err := refreshToken.SignedString(auth.RtJwtKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return map[string]string{
-		"access_token": tokenString,
-		"refresh_token": rt,
-	}, nil
-}
 

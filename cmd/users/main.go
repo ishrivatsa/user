@@ -31,6 +31,8 @@ func handleRequest() {
 	{
 		nonAuthGroup.POST("/register", service.RegisterUser)
 		nonAuthGroup.POST("/login",service.LoginUser)
+		nonAuthGroup.POST("/refresh-token", service.RefreshAccessToken)
+		nonAuthGroup.POST("/validate-token", service.ValidateToken)
 	}
 
 	authGroup := router.Group("/")
