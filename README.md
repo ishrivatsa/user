@@ -12,6 +12,8 @@ Go (golang) : 1.11.2
 
 mongodb as docker container
 
+redis as docker container
+
 zipkin as docker container (optional)
 
 ## Instructions
