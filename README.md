@@ -146,11 +146,11 @@ There are pre-created users loaded into the database.
 
     Expected JSON Response 
     
-  {
-    "access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8xIiwidHlwIjoiSldUIn0.eyJVc2VybmFtZSI6ImVyaWMiLCJleHAiOjE1NzA3NjI5NzksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.n70EAaiY6rbH1QzpoUJhx3hER4odW8FuN2wYG1sgH7g",
+  	{
+	    "access_token":    "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8xIiwidHlwIjoiSldUIn0.eyJVc2VybmFtZSI6ImVyaWMiLCJleHAiOjE1NzA3NjI5NzksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.n70EAaiY6rbH1QzpoUJhx3hER4odW8FuN2wYG1sgH7g",
     "refresh_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8yIiwidHlwIjoiSldUIn0.eyJleHAiOjE1NzA3NjM1NzksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.zwGB1340IVMLjMf_UnFC_rEeNdD131OGPcg_S0ea8DE",
     "status": 200
-  }
+ 	 }
 
    The access_token is used to make requests to other services to get data. The refresh_token is used to request new access_token. 
 
@@ -163,17 +163,17 @@ There are pre-created users loaded into the database.
 
    Expected JSON body with Request
 
-   {
+  	 {
        "refresh_token" : "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8yIiwidHlwIjoiSldUIn0.eyJleHAiOjE1NzA3NjM1NzksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.zwGB1340IVMLjMf_UnFC_rEeNdD131OGPcg_S0ea8DE"
-   }
+ 	  }
 
    Expected JSON Response
 
-   {
+  	 {
     "access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8xIiwidHlwIjoiSldUIn0.eyJVc2VybmFtZSI6ImVyaWMiLCJleHAiOjE1NzA3NjMyMjksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.wrWsDNor28aWv6huKUHAuVyROGAXqjO5luPfa5K5NQI",
     "refresh_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8yIiwidHlwIjoiSldUIn0.eyJleHAiOjE1NzA3NjM1NzksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.zwGB1340IVMLjMf_UnFC_rEeNdD131OGPcg_S0ea8DE",
     "status": 200
-  }
+ 	 }
 
   Note that the access_token request here is new. 
 
@@ -185,25 +185,25 @@ There are pre-created users loaded into the database.
 
    Expected JSON body with Request
 
-   {
+  	 {
 	"access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8xIiwidHlwIjoiSldUIn0.eyJVc2VybmFtZSI6ImVyaWMiLCJleHAiOjE1NzA3NjMyMjksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.wrWsDNor28aWv6huKUHAuVyROGAXqjO5luPfa5K5NQI"
-   }
+  	 }
 
   Expected JSON Response 
 
    If the the JWT is valid and user is authorized
 
-  {
-    "message": "Token Valid. User Authorized",
-    "status": 200
-  }
+  	{
+ 	   "message": "Token Valid. User Authorized",
+  	   "status": 200
+  	}
 
   If the JWT is not valid (either expired or invalid signature) then the user is NOT authorized.
 
-  {
-    "message": "Invalid Key. User Not Authorized",
-    "status": 401
-  }
+  	{
+    	    "message": "Invalid Key. User Not Authorized",
+   	    "status": 401
+  	}
 
 
 > **Register/Create new user**
