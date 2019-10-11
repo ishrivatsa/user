@@ -5,11 +5,10 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vmwarecloudadvocacy/user/internal/db"
-	"github.com/vmwarecloudadvocacy/user/pkg/logger"
-	"github.com/vmwarecloudadvocacy/user/internal/service"
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
-	
+	"github.com/vmwarecloudadvocacy/user/internal/db"
+	"github.com/vmwarecloudadvocacy/user/internal/service"
+	"github.com/vmwarecloudadvocacy/user/pkg/logger"
 )
 
 const (
@@ -25,10 +24,10 @@ func handleRequest() {
 	// Init Router
 	router := gin.New()
 
-	nonAuthGroup := router.Group("/") 
+	nonAuthGroup := router.Group("/")
 	{
 		nonAuthGroup.POST("/register", service.RegisterUser)
-		nonAuthGroup.POST("/login",service.LoginUser)
+		nonAuthGroup.POST("/login", service.LoginUser)
 		nonAuthGroup.POST("/refresh-token", service.RefreshAccessToken)
 		nonAuthGroup.POST("/verify-token", service.VerifyAuthToken)
 	}
@@ -40,6 +39,7 @@ func handleRequest() {
 		authGroup.GET("/users", service.GetUsers)
 		authGroup.GET("/users/:id", service.GetUser)
 		authGroup.DELETE("/users/:id", service.DeleteUser)
+		authGroup.POST("/logout", service.LogoutUser)
 	}
 
 	//flag.Parse()
@@ -69,10 +69,14 @@ func main() {
 	dbsession := db.ConnectDB(dbName, collectionName, logger.Logger)
 	logger.Logger.Infof("Successfully connected to database %s", dbName)
 
+	redisClient := db.ConnectRedisDB(logger.Logger)
+	logger.Logger.Infof("Successfully connected to redis database NAME")
+
 	handleRequest()
 
 	db.CloseDB(dbsession, logger.Logger)
 
 	defer f.Close()
+	defer redisClient.Close()
 
 }

@@ -4,25 +4,24 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"strconv"
 	"net/http"
-	"time"
+	"strconv"
 	"strings"
+	"time"
 
-	"github.com/globalsign/mgo/bson"
-	"github.com/gin-gonic/gin"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
+	"github.com/globalsign/mgo/bson"
+	"github.com/vmwarecloudadvocacy/user/internal/db"
 	"github.com/vmwarecloudadvocacy/user/pkg/logger"
-	
 )
 
 var (
-	ErrMissingField         = "Error missing %v"
+	ErrMissingField = "Error missing %v"
 	// AtJwtKey is used to create the Access token signature
 	AtJwtKey = []byte("my_secret_key")
 	// RtJwtKey is used to create the refresh token signature
 	RtJwtKey = []byte("my_secret_key_2")
-	
 )
 
 type RefreshTokenRequestBody struct {
@@ -90,6 +89,19 @@ func CalculatePassHash(pass, salt string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
+func IsBlacklisted(tokenString string) bool {
+
+	status := db.RedisClient.Get(tokenString)
+
+	val, _ := status.Result()
+
+	if val == "" {
+		return false
+	}
+
+	return true
+}
+
 // AuthMiddleware checks if the JWT sent is valid or not. This function is involked for every API route that needs authentication
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -115,6 +127,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		foundInBlacklist := IsBlacklisted(extractedToken[1])
+
+		if foundInBlacklist == true {
+			logger.Logger.Infof("Found in Blacklist")
+			c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Token"})
+			c.Abort()
+			return
+		}
+
 		// Parse the claims
 		parsedToken, err := jwt.ParseWithClaims(clientToken, claims, func(token *jwt.Token) (interface{}, error) {
 			return AtJwtKey, nil
@@ -124,6 +145,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			if err == jwt.ErrSignatureInvalid {
 				logger.Logger.Errorf("Invalid Token Signature")
 				c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Token"})
+				c.Abort()
 				return
 			}
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Bad Request"})
@@ -132,21 +154,21 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		if !parsedToken.Valid {
-			logger.Logger.Errorf("Invald Token")
+			logger.Logger.Errorf("Invalid Token")
 			c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Token"})
 			c.Abort()
 			return
 		}
-		
+
 		c.Next()
 	}
 }
 
-// GenerateTokenPair creates and returns a new set of access_token and refresh_token. 
+// GenerateTokenPair creates and returns a new set of access_token and refresh_token.
 func GenerateTokenPair(username string, uuid string) (string, string, error) {
 
 	tokenString, err := GenerateAccessToken(username, uuid)
-	if err !=nil {
+	if err != nil {
 		return "", "", err
 	}
 
@@ -165,9 +187,8 @@ func GenerateTokenPair(username string, uuid string) (string, string, error) {
 		return "", "", err
 	}
 
-	return  tokenString, refreshTokenString, nil
+	return tokenString, refreshTokenString, nil
 }
-
 
 // ValidateToken is used to validate both access_token and refresh_token. It is done based on the "Key ID" provided by the JWT
 func ValidateToken(tokenString string) (bool, string, string, error) {
@@ -178,8 +199,8 @@ func ValidateToken(tokenString string) (bool, string, string, error) {
 
 	claims := jwt.MapClaims{}
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{},error) {
-		
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+
 		keyID = token.Header["kid"].(string)
 		// If the "kid" (Key ID) is equal to signin_1, then it is compared against access_token secret key, else if it
 		// is equal to signin_2 , it is compared against refresh_token secret key.
@@ -188,16 +209,16 @@ func ValidateToken(tokenString string) (bool, string, string, error) {
 		} else if keyID == "signin_2" {
 			key = RtJwtKey
 		}
-		return key, nil	
+		return key, nil
 	})
 
-	// Check if signatures are valid. 
+	// Check if signatures are valid.
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
 			logger.Logger.Errorf("Invalid Token Signature")
 			return false, "", keyID, err
 		}
-		return false, "", keyID,err
+		return false, "", keyID, err
 	}
 
 	if !token.Valid {
@@ -206,6 +227,68 @@ func ValidateToken(tokenString string) (bool, string, string, error) {
 	}
 
 	return true, claims["sub"].(string), keyID, nil
+}
+
+func InvalidateToken(tokenString string) error {
+
+	var key []byte
+
+	var keyID string
+
+	claims := jwt.MapClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+
+		keyID = token.Header["kid"].(string)
+		// If the "kid" (Key ID) is equal to signin_1, then it is compared against access_token secret key, else if it
+		// is equal to signin_2 , it is compared against refresh_token secret key.
+		if keyID == "signin_1" {
+			key = AtJwtKey
+		} else if keyID == "signin_2" {
+			key = RtJwtKey
+		}
+		return key, nil
+	})
+
+	// Check if signatures are valid.
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			logger.Logger.Errorf("Invalid Token Signature")
+			return err
+		}
+		return err
+	}
+
+	if !token.Valid {
+		logger.Logger.Errorf("Invalid Token")
+		return err
+	}
+
+	// timestamp := claims["exp"]
+	// timeremain := 0
+	// if validity, ok := timestamp.(float64); ok {
+	// 	tm := time.Unix(int64(validity), 0)
+	// 	remainer := tm.Sub(time.Now())
+	// 	if remainer > 0 {
+	// 		timeremain = int(remainer.Seconds() + 3600)
+	// 	}
+	// }
+
+	status := db.RedisClient.Set(tokenString, tokenString, 0)
+
+	// if status.Err() != nil {
+	// 	logger.Logger.Errorf("Could not set value in Redis")
+
+	// }
+
+	val, err := status.Result()
+
+	if val == "OK" {
+		logger.Logger.Infof("User Logged Out")
+		return nil
+	}
+
+	return status.Err()
 }
 
 func GenerateAccessToken(username string, uuid string) (string, error) {

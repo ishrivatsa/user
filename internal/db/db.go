@@ -5,10 +5,10 @@ import (
 	"os"
 
 	"github.com/globalsign/mgo"
+	redis "github.com/go-redis/redis/v7"
 	"github.com/sirupsen/logrus"
 	"github.com/vmwarecloudadvocacy/user/pkg/logger"
-//	"github.com/vmwarecloudadvocacy/user/pkg/logger"
-) 
+)
 
 var (
 	// Session stores mongo session
@@ -20,8 +20,9 @@ var (
 	DB *mgo.Database
 
 	Collection *mgo.Collection
-)
 
+	RedisClient *redis.Client
+)
 
 // GetEnv accepts the ENV as key and a default string
 // If the lookup returns false then it uses the default string else it leverages the value set in ENV variable
@@ -29,9 +30,25 @@ func GetEnv(key, fallback string) string {
 	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
-	
+
 	logger.Logger.Info("Setting default values for ENV variable " + key)
 	return fallback
+}
+
+func ConnectRedisDB(logger *logrus.Logger) *redis.Client {
+
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     "0.0.0.0:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := RedisClient.Ping().Result()
+	fmt.Println(pong)
+	if err != nil {
+		fmt.Errorf(err.Error())
+	}
+	return RedisClient
 }
 
 // ConnectDB accepts name of database and collection as a string

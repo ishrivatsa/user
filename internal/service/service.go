@@ -3,6 +3,7 @@ package service
 import (
 	//"fmt"
 	"net/http"
+	"strings"
 
 	//jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -10,9 +11,7 @@ import (
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
 	"github.com/vmwarecloudadvocacy/user/internal/db"
 	"github.com/vmwarecloudadvocacy/user/pkg/logger"
-
 )
-
 
 func VerifyAuthToken(c *gin.Context) {
 
@@ -25,6 +24,15 @@ func VerifyAuthToken(c *gin.Context) {
 		return
 	}
 
+	foundInBlacklist := auth.IsBlacklisted(accessTokenRequest.AccessToken)
+
+	if foundInBlacklist == true {
+		logger.Logger.Infof("Found in Blacklist")
+		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Token"})
+		c.Abort()
+		return
+	}
+
 	valid, _, key, err := auth.ValidateToken(accessTokenRequest.AccessToken)
 	if valid == false || err != nil {
 		message := err.Error()
@@ -33,7 +41,7 @@ func VerifyAuthToken(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	
+
 	// Make sure that key passed was not a refresh token
 	if key != "signin_1" {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Provide a valid access token"})
@@ -45,13 +53,12 @@ func VerifyAuthToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Token Valid. User Authorized"})
 }
 
-
 func RefreshAccessToken(c *gin.Context) {
 
 	//var user auth.UserResponse
 	var tokenRequest auth.RefreshTokenRequestBody
 
-	err := c.ShouldBindJSON(&tokenRequest)	
+	err := c.ShouldBindJSON(&tokenRequest)
 	if err != nil {
 		message := err.Error()
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
@@ -65,12 +72,12 @@ func RefreshAccessToken(c *gin.Context) {
 		c.Abort()
 		return
 	}
-   
+
 	// TODO: Fix this - Check for valid user ID
 	if valid == true && id != "" {
 
 		newToken, _ := auth.GenerateAccessToken("eric", id)
-		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": newToken, "refresh_token": tokenRequest.RefreshToken})	
+		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": newToken, "refresh_token": tokenRequest.RefreshToken})
 		c.Abort()
 		return
 	}
@@ -157,7 +164,7 @@ func RegisterUser(c *gin.Context) {
 
 }
 
-// LoginUser 
+// LoginUser Method
 func LoginUser(c *gin.Context) {
 	var user auth.User
 
@@ -193,6 +200,29 @@ func LoginUser(c *gin.Context) {
 
 }
 
+// LogoutUser Method
+func LogoutUser(c *gin.Context) {
+
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		logger.Logger.Errorf("Authorization token was not provided")
+		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Authorization Token is required"})
+		c.Abort()
+		return
+	}
+
+	extractedToken := strings.Split(token, "Bearer ")
+
+	err := auth.InvalidateToken(extractedToken[1])
+	if err != nil {
+		c.Abort()
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"status": http.StatusAccepted, "message": "Done"})
+
+}
+
 // DeleteUser accepts user id and deletes the specific user
 func DeleteUser(c *gin.Context) {
 
@@ -214,7 +244,3 @@ func DeleteUser(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "User deleted successfully!"})
 }
-
-
-
-
