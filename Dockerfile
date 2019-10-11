@@ -10,8 +10,8 @@ ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 RUN go build -o user .
 
-FROM alpine
-RUN apk update && apk add mongodb
+FROM bitnami/minideb:stretch
+RUN install_packages mongodb-clients
 RUN mkdir app
 #Copy the executable from the previous image
 COPY --from=builder /go/src/github.com/vmwarecloudadvocacy/user/user /app
