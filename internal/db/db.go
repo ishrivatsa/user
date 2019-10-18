@@ -1,11 +1,13 @@
-package main
+package db
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/globalsign/mgo"
+	redis "github.com/go-redis/redis/v7"
 	"github.com/sirupsen/logrus"
+	"github.com/vmwarecloudadvocacy/user/pkg/logger"
 )
 
 var (
@@ -15,10 +17,39 @@ var (
 	// Mongo stores the mongodb connection string information
 	mongo *mgo.DialInfo
 
-	db *mgo.Database
+	DB *mgo.Database
 
-	collection *mgo.Collection
+	Collection *mgo.Collection
+
+	RedisClient *redis.Client
 )
+
+// GetEnv accepts the ENV as key and a default string
+// If the lookup returns false then it uses the default string else it leverages the value set in ENV variable
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+
+	logger.Logger.Info("Setting default values for ENV variable " + key)
+	return fallback
+}
+
+func ConnectRedisDB(logger *logrus.Logger) *redis.Client {
+
+	RedisClient = redis.NewClient(&redis.Options{
+		Addr:     "0.0.0.0:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	pong, err := RedisClient.Ping().Result()
+	fmt.Println(pong)
+	if err != nil {
+		fmt.Errorf(err.Error())
+	}
+	return RedisClient
+}
 
 // ConnectDB accepts name of database and collection as a string
 func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo.Session {
@@ -40,14 +71,14 @@ func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo
 		os.Exit(1)
 	}
 
-	db = Session.DB(dbName)
+	DB = Session.DB(dbName)
 
-	error = db.Session.Ping()
+	error = DB.Session.Ping()
 	if error != nil {
 		logger.Errorf("Unable to connect to database %s", dbName)
 	}
 
-	collection = db.C(collectionName)
+	Collection = DB.C(collectionName)
 
 	logger.Info("Connected to database and the collection")
 
