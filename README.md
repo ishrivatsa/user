@@ -53,15 +53,21 @@ The **user** service, either running inside a Docker container or as a stand-alo
 * **USERS_DB_USERNAME**: The username to connect to the MongoDB database
 * **USERS_DB_PASSWORD**: The password to connect to the MongoDB database
 * **USERS_DB_HOST**: The host or IP on which MongoDB is active
+* **USERS_DB_PORT**: The port on which MongoDB is active
+* **REDIS_DB_HOST**: The host or IP on which RedisDB is active
+* **REDIS_DB_PORT**: The port on which RedisDB is active
 
 The Docker image is based on the Bitnami MiniDeb container. Use this commands to run the latest stable version of the payment service with all available parameters:
 
 ```bash
 # Run the MongoDB container
-docker run --rm -it -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e      MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db
+docker run --rm -itd -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e      MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db
+
+# Run the Redis container
+docker run --rm -itd -p 27017:27017 --name redis bitnami/redis
 
 # Run the user service
-docker run --rm -it -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -p 8081:8081 gcr.io/vmwarecloudadvocacy/acmeshop-user:1.1.1-beta
+docker run --rm -itd -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -p 8081:8081 gcr.io/vmwarecloudadvocacy/acmeshop-user:1.1.1-beta
 ```
 
 ## Available users
