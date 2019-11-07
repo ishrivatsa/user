@@ -6,7 +6,6 @@ import (
 
 	"github.com/globalsign/mgo"
 	redis "github.com/go-redis/redis/v7"
-	"github.com/sirupsen/logrus"
 	"github.com/vmwarecloudadvocacy/user/pkg/logger"
 )
 
@@ -35,24 +34,33 @@ func GetEnv(key, fallback string) string {
 	return fallback
 }
 
-func ConnectRedisDB(logger *logrus.Logger) *redis.Client {
+// ConnectRedisDB returns a redis client
+func ConnectRedisDB() *redis.Client {
+
+	redisHost := GetEnv("REDIS_DB_HOST", "0.0.0.0")
+	redisPort := GetEnv("REDIS_DB_PORT", "6379")
+
+	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     "0.0.0.0:6379",
+		Addr:     redisAddr,
 		Password: "",
 		DB:       0,
 	})
 
 	pong, err := RedisClient.Ping().Result()
-	fmt.Println(pong)
+	logger.Logger.Infof("Reply from Redis %s", pong)
 	if err != nil {
 		fmt.Errorf(err.Error())
+		logger.Logger.Fatalf("Failed connecting to redis db %s", err.Error())
+		os.Exit(1)
 	}
+	logger.Logger.Infof("Successfully connected to redis database")
 	return RedisClient
 }
 
 // ConnectDB accepts name of database and collection as a string
-func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo.Session {
+func ConnectDB(dbName string, collectionName string) *mgo.Session {
 
 	dbUsername := os.Getenv("USERS_DB_USERNAME")
 	dbSecret := os.Getenv("USERS_DB_PASSWORD")
@@ -67,7 +75,7 @@ func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo
 
 	if error != nil {
 		fmt.Printf(error.Error())
-		logger.Fatalf(error.Error())
+		logger.Logger.Fatalf(error.Error())
 		os.Exit(1)
 	}
 
@@ -75,19 +83,19 @@ func ConnectDB(dbName string, collectionName string, logger *logrus.Logger) *mgo
 
 	error = DB.Session.Ping()
 	if error != nil {
-		logger.Errorf("Unable to connect to database %s", dbName)
+		logger.Logger.Errorf("Unable to connect to database %s", dbName)
 	}
 
 	Collection = DB.C(collectionName)
 
-	logger.Info("Connected to database and the collection")
+	logger.Logger.Info("Connected to database and the collection")
 
 	return Session
 }
 
 // CloseDB accepst Session as input to close Connection to the database
-func CloseDB(s *mgo.Session, logger *logrus.Logger) {
+func CloseDB(s *mgo.Session) {
 
 	defer s.Close()
-	logger.Info("Closed connection to db")
+	logger.Logger.Info("Closed connection to db")
 }

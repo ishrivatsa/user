@@ -66,15 +66,14 @@ func main() {
 		logger.InitLogger(f)
 	}
 
-	dbsession := db.ConnectDB(dbName, collectionName, logger.Logger)
+	dbsession := db.ConnectDB(dbName, collectionName)
 	logger.Logger.Infof("Successfully connected to database %s", dbName)
 
-	redisClient := db.ConnectRedisDB(logger.Logger)
-	logger.Logger.Infof("Successfully connected to redis database NAME")
-
+	redisClient := db.ConnectRedisDB()
+	
 	handleRequest()
 
-	db.CloseDB(dbsession, logger.Logger)
+	db.CloseDB(dbsession)
 
 	defer f.Close()
 	defer redisClient.Close()
