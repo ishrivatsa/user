@@ -44,12 +44,14 @@ func VerifyAuthToken(c *gin.Context) {
 
 	// Make sure that key passed was not a refresh token
 	if key != "signin_1" {
+		logger.Logger.Errorf("Invalid Key Type")
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Provide a valid access token"})
 		c.Abort()
 		return
 	}
 
 	// Send StatusOK to indicate the access token was valid
+	logger.Logger.Infof("Successfully verified user")
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Token Valid. User Authorized"})
 }
 
