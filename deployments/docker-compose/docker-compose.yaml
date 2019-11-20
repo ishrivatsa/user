@@ -1,0 +1,40 @@
+
+
+version: '3'
+
+services:
+    user-db:
+      image: gcr.io/vmwarecloudadvocacy/acmeshop-user-db:latest
+      hostname: user-db
+      environment:
+        - MONGO_INITDB_ROOT_USERNAME=mongoadmin
+        - MONGO_INITDB_ROOT_PASSWORD=secret
+        - MONGO_INITDB_DATABASE=acmefit
+      cap_add:
+        - CHOWN
+        - SETGID
+        - SETUID
+      tmpfs:
+        - /tmp:rw,noexec,nosuid
+    user-redis-db:
+      image: redis:5.0.3-alpine
+      hostname: user-redis-db
+      restart: always
+      ports:
+        - '6379:6379'
+    user:
+       image: gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
+       hostname: users
+       restart: always
+       ports:
+         - '8081:8081'
+       cap_add:
+           - NET_BIND_SERVICE
+       environment:
+           - USERS_DB_USERNAME=mongoadmin
+           - USERS_DB_PASSWORD=secret
+           - USERS_DB_HOST=user-db
+           - USERS_DB_PORT=27017
+           - USERS_PORT=8081
+           - REDIS_DB_HOST=user-redis-db
+           - REDIS_DB_PORT=6379
