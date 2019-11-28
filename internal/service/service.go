@@ -1,12 +1,14 @@
 package service
 
 import (
-	//"fmt"
+	"fmt"
 	"net/http"
 	"strings"
 
-	//jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	//stdopentracing "github.com/opentracing/opentracing-go"
+	//tracelog "github.com/opentracing/opentracing-go/log"
+	"github.com/vmwarecloudadvocacy/user/internal/tracer"
 	"github.com/globalsign/mgo/bson"
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
 	"github.com/vmwarecloudadvocacy/user/internal/db"
@@ -189,18 +191,30 @@ func RegisterUser(c *gin.Context) {
 func LoginUser(c *gin.Context) {
 	var user auth.User
 
-	error := c.ShouldBindJSON(&user)
+	_, err := tracer.CreateTracerAndSpan("login", c)
+	
+	if err !=nil {
+		fmt.Println(err.Error())
+	}
+	
+	err = c.ShouldBindJSON(&user)
 
-	if error != nil {
+	if err != nil {
+	//	tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Field Name(s)"})
 		return
 	}
 
 	userpass := user.Password
 
-	error = db.Collection.Find(bson.M{"username": user.Username}).One(&user)
+	err = db.Collection.Find(bson.M{"username": user.Username}).One(&user)
 
-	if error != nil {
+	if err != nil {
+		// span.LogFields(
+		// 	tracelog.String("event", "error"),
+		// 	tracelog.String("message", err.Error()),
+		// )
+		//tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Username"})
 		return
 	}
