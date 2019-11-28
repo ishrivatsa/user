@@ -13,6 +13,7 @@ import (
 	"github.com/vmwarecloudadvocacy/user/pkg/logger"
 )
 
+// VerifyAuthToken checks to see if the JWT was present in blacklist table and validates it's authenticity
 func VerifyAuthToken(c *gin.Context) {
 
 	var accessTokenRequest auth.AccessTokenRequestBody
@@ -55,6 +56,7 @@ func VerifyAuthToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Token Valid. User Authorized"})
 }
 
+// RefreshAccessToken method creates a new access_token, when the user provides an unexpired and valid refresh_token
 func RefreshAccessToken(c *gin.Context) {
 
 	//var user auth.UserResponse
@@ -75,10 +77,22 @@ func RefreshAccessToken(c *gin.Context) {
 		return
 	}
 
-	// TODO: Fix this - Check for valid user ID
 	if valid == true && id != "" {
 
-		newToken, _ := auth.GenerateAccessToken("eric", id)
+		var user auth.UserResponse
+
+		// Retreive the username from users DB. This will verify if the user ID passed with JWT was legit or not. 
+		error := db.Collection.FindId(bson.ObjectIdHex(id)).One(&user)	
+
+		if error != nil {
+			message := "User " + error.Error()
+			logger.Logger.Errorf(message)
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Invalid refresh token"})
+			c.Abort()
+			return
+		}
+
+		newToken, _ := auth.GenerateAccessToken(user.Username, id)
 		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": newToken, "refresh_token": tokenRequest.RefreshToken})
 		c.Abort()
 		return
