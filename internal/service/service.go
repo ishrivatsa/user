@@ -2,17 +2,12 @@ package service
 
 import (
 	"fmt"
-	//"fmt"
 	"net/http"
 	"strings"
 
-	//jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	//stdopentracing "github.com/opentracing/opentracing-go"
 	//tracelog "github.com/opentracing/opentracing-go/log"
-	"github.com/globalsign/mgo/bson"
-	"github.com/vmwarecloudadvocacy/user/internal/auth"
-	"github.com/vmwarecloudadvocacy/user/internal/db"
 	"github.com/vmwarecloudadvocacy/user/internal/tracer"
 	"github.com/globalsign/mgo/bson"
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
