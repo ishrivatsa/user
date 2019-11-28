@@ -144,7 +144,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		if err != nil {
 			if err == jwt.ErrSignatureInvalid {
 				logger.Logger.Errorf("Invalid Token Signature")
-				c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Token"})
+				c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Token Signature"})
 				c.Abort()
 				return
 			}
@@ -229,6 +229,7 @@ func ValidateToken(tokenString string) (bool, string, string, error) {
 	return true, claims["sub"].(string), keyID, nil
 }
 
+// InvalidateToken method marks the access_token as invalid. This token cannot be used for future authentication
 func InvalidateToken(tokenString string) error {
 
 	var key []byte
@@ -264,16 +265,7 @@ func InvalidateToken(tokenString string) error {
 		return err
 	}
 
-	// timestamp := claims["exp"]
-	// timeremain := 0
-	// if validity, ok := timestamp.(float64); ok {
-	// 	tm := time.Unix(int64(validity), 0)
-	// 	remainer := tm.Sub(time.Now())
-	// 	if remainer > 0 {
-	// 		timeremain = int(remainer.Seconds() + 3600)
-	// 	}
-	// }
-
+    // @TODO - Fix the expiration time
 	status := db.RedisClient.Set(tokenString, tokenString, 0)
 
 	// if status.Err() != nil {
@@ -291,6 +283,7 @@ func InvalidateToken(tokenString string) error {
 	return status.Err()
 }
 
+// GenerateAccessToken method creats a new access token when the user logs in by providing username and password
 func GenerateAccessToken(username string, uuid string) (string, error) {
 	// Declare the expiration time of the access token
 	// Here the expiration is 5 minutes
