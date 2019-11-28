@@ -196,7 +196,6 @@ func RegisterUser(c *gin.Context) {
 func LoginUser(c *gin.Context) {
 	var user auth.User
 
-<<<<<<< HEAD
 	_, err := tracer.CreateTracerAndSpan("login", c)
 	
 	if err !=nil {
@@ -207,18 +206,12 @@ func LoginUser(c *gin.Context) {
 
 	if err != nil {
 	//	tracer.OnErrorLog(span, err)
-=======
-	error := c.ShouldBindJSON(&user)
-
-	if error != nil {
->>>>>>> master
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Field Name(s)"})
 		return
 	}
 
 	userpass := user.Password
 
-<<<<<<< HEAD
 	err = db.Collection.Find(bson.M{"username": user.Username}).One(&user)
 
 	if err != nil {
@@ -227,11 +220,6 @@ func LoginUser(c *gin.Context) {
 		// 	tracelog.String("message", err.Error()),
 		// )
 		//tracer.OnErrorLog(span, err)
-=======
-	error = db.Collection.Find(bson.M{"username": user.Username}).One(&user)
-
-	if error != nil {
->>>>>>> master
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Username"})
 		return
 	}
