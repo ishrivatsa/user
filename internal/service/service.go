@@ -56,10 +56,9 @@ func VerifyAuthToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Token Valid. User Authorized"})
 }
 
-// RefreshAccessToken method creates a new access_token, when the user provides an unexpired and valid refresh_token
+// RefreshAccessToken method creates a new access_token, when the user provides an unexpired and validrefresh_token
 func RefreshAccessToken(c *gin.Context) {
 
-	//var user auth.UserResponse
 	var tokenRequest auth.RefreshTokenRequestBody
 
 	err := c.ShouldBindJSON(&tokenRequest)
@@ -92,7 +91,13 @@ func RefreshAccessToken(c *gin.Context) {
 			return
 		}
 
-		newToken, _ := auth.GenerateAccessToken(user.Username, id)
+		newToken, err := auth.GenerateAccessToken(user.Username, id)
+		if err!=nil {
+			logger.Logger.Errorf(err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot Generate New Access Token"})
+			c.Abort()
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": newToken, "refresh_token": tokenRequest.RefreshToken})
 		c.Abort()
 		return
