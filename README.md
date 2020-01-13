@@ -29,7 +29,7 @@ There are different dependencies based on whether you want to run a built contai
 Use this command to pull the latest tagged version of the shipping service:
 
 ```bash
-docker pull gcr.io/vmwarecloudadvocacy/acmeshop-user:1.1.1-beta
+docker pull gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
 ```
 
 To build a docker container, run `docker build . -t vmwarecloudadvocacy/acmeshop-user:<tag>`.
