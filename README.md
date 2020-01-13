@@ -1,6 +1,6 @@
 # User
 
-[![gcr.io](https://img.shields.io/badge/gcr.io-v1.1.1--beta-orange?style=flat-square)](https://console.cloud.google.com/gcr/images/vmwarecloudadvocacy/GLOBAL/acmeshop-user@sha256:9853344bb335df2900de8d5454ada13422de62c8b72852564688d522fda9290d/details?tab=info)
+[![gcr.io](https://img.shields.io/badge/gcr.io-v2.0-green?style=flat-square)](https://console.cloud.google.com/gcr/images/vmwarecloudadvocacy/GLOBAL/acmeshop-user@sha256:9853344bb335df2900de8d5454ada13422de62c8b72852564688d522fda9290d/details?tab=info)
 
 > A user service, because what is a shop without users to buy our awesome red pants?
 
