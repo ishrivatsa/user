@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 	//stdopentracing "github.com/opentracing/opentracing-go"
 	//tracelog "github.com/opentracing/opentracing-go/log"
-	"github.com/vmwarecloudadvocacy/user/internal/tracer"
 	"github.com/globalsign/mgo/bson"
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
 	"github.com/vmwarecloudadvocacy/user/internal/db"
+	"github.com/vmwarecloudadvocacy/user/internal/tracer"
 	"github.com/vmwarecloudadvocacy/user/pkg/logger"
 )
 
@@ -82,8 +82,8 @@ func RefreshAccessToken(c *gin.Context) {
 
 		var user auth.UserResponse
 
-		// Retreive the username from users DB. This will verify if the user ID passed with JWT was legit or not. 
-		error := db.Collection.FindId(bson.ObjectIdHex(id)).One(&user)	
+		// Retreive the username from users DB. This will verify if the user ID passed with JWT was legit or not.
+		error := db.Collection.FindId(bson.ObjectIdHex(id)).One(&user)
 
 		if error != nil {
 			message := "User " + error.Error()
@@ -94,7 +94,7 @@ func RefreshAccessToken(c *gin.Context) {
 		}
 
 		newToken, err := auth.GenerateAccessToken(user.Username, id)
-		if err!=nil {
+		if err != nil {
 			logger.Logger.Errorf(err.Error())
 			c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Cannot Generate New Access Token"})
 			c.Abort()
@@ -192,15 +192,15 @@ func LoginUser(c *gin.Context) {
 	var user auth.User
 
 	_, err := tracer.CreateTracerAndSpan("login", c)
-	
-	if err !=nil {
+
+	if err != nil {
 		fmt.Println(err.Error())
 	}
-	
+
 	err = c.ShouldBindJSON(&user)
 
 	if err != nil {
-	//	tracer.OnErrorLog(span, err)
+		//	tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Field Name(s)"})
 		return
 	}
@@ -250,6 +250,7 @@ func LogoutUser(c *gin.Context) {
 
 	err := auth.InvalidateToken(extractedToken[1])
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": err.Error()})
 		c.Abort()
 		return
 	}
