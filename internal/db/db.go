@@ -39,19 +39,20 @@ func ConnectRedisDB() *redis.Client {
 
 	redisHost := GetEnv("REDIS_DB_HOST", "0.0.0.0")
 	redisPort := GetEnv("REDIS_DB_PORT", "6379")
+	redisPassword := GetEnv("REDIS_DB_PASSWORD", "secret")
 
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 
 	RedisClient = redis.NewClient(&redis.Options{
 		Addr:     redisAddr,
-		Password: "",
+		Password: redisPassword,
 		DB:       0,
 	})
 
 	pong, err := RedisClient.Ping().Result()
 	logger.Logger.Infof("Reply from Redis %s", pong)
 	if err != nil {
-		fmt.Errorf(err.Error())
+		//fmt.Errorf(err.Error())
 		logger.Logger.Fatalf("Failed connecting to redis db %s", err.Error())
 		os.Exit(1)
 	}
