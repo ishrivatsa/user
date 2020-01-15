@@ -49,13 +49,14 @@ To build the app as a stand-alone executable, run `go build` from the `cmd/users
 The **user** service, either running inside a Docker container or as a stand-alone app, relies on the below environment variables:
 
 * **USERS_HOST**: The IP of the user app to listen on (like `0.0.0.0`)
-* **USERS_PORT**: The port number for the user service to listen on (like `8081`)
+* **USERS_PORT**: The port number for the user service to listen on (like `8083`)
 * **USERS_DB_USERNAME**: The username to connect to the MongoDB database
 * **USERS_DB_PASSWORD**: The password to connect to the MongoDB database
 * **USERS_DB_HOST**: The host or IP on which MongoDB is active
 * **USERS_DB_PORT**: The port on which MongoDB is active
 * **REDIS_DB_HOST**: The host or IP on which RedisDB is active
 * **REDIS_DB_PORT**: The port on which RedisDB is active
+* **REDIS_DB_PASSWORD**: The password for RedisDB. This field must be provided else the value defaults to *secret*
 
 The Docker image is based on the Bitnami MiniDeb container. Use this commands to run the latest stable version of the payment service with all available parameters:
 
@@ -64,10 +65,10 @@ The Docker image is based on the Bitnami MiniDeb container. Use this commands to
 docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e      MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db
 
 # Run the Redis container
-docker run -d -p 6379:6379 -e ALLOW_EMPTY_PASSWORD=yes --name redis bitnami/redis
+docker run -d -p 6379:6379 -e REDIS_PASSWORD=secret --name redis bitnami/redis
 
 # Run the user service
-docker run -d -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -p 8081:8081 gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
+docker run -d -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -e REDIS_DB_HOST=0.0.0.0 -e REDIS_DB_PORT=6379 -e REDIS_DB_PASSWORD=secret -p 8083:8083 gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
 ```
 
 ## Available users
