@@ -176,7 +176,8 @@ func GenerateTokenPair(username string, uuid string) (string, string, error) {
 	refreshToken := jwt.New(jwt.SigningMethodHS256)
 	refreshToken.Header["kid"] = "signin_2"
 
-	expirationTimeRefreshToken := time.Now().Add(15 * time.Minute).Unix()
+	// Expiration time is 180 minutes
+	expirationTimeRefreshToken := time.Now().Add(180 * time.Minute).Unix()
 
 	rtClaims := refreshToken.Claims.(jwt.MapClaims)
 	rtClaims["sub"] = uuid
@@ -265,7 +266,7 @@ func InvalidateToken(tokenString string) error {
 		return err
 	}
 
-    // @TODO - Fix the expiration time
+	// @TODO - Fix the expiration time
 	status := db.RedisClient.Set(tokenString, tokenString, 0)
 
 	// if status.Err() != nil {
@@ -286,8 +287,8 @@ func InvalidateToken(tokenString string) error {
 // GenerateAccessToken method creats a new access token when the user logs in by providing username and password
 func GenerateAccessToken(username string, uuid string) (string, error) {
 	// Declare the expiration time of the access token
-	// Here the expiration is 5 minutes
-	expirationTimeAccessToken := time.Now().Add(5 * time.Minute).Unix()
+	// Here the expiration is 60 minutes
+	expirationTimeAccessToken := time.Now().Add(60 * time.Minute).Unix()
 
 	// Declare the token with the algorithm used for signing, and the claims
 	token := jwt.New(jwt.SigningMethodHS256)
