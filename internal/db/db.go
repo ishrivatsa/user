@@ -37,9 +37,9 @@ func GetEnv(key, fallback string) string {
 // ConnectRedisDB returns a redis client
 func ConnectRedisDB() *redis.Client {
 
-	redisHost := GetEnv("REDIS_DB_HOST", "0.0.0.0")
-	redisPort := GetEnv("REDIS_DB_PORT", "6379")
-	redisPassword := GetEnv("REDIS_DB_PASSWORD", "secret")
+	redisHost := GetEnv("REDIS_HOST", "0.0.0.0")
+	redisPort := GetEnv("REDIS_PORT", "6379")
+	redisPassword := GetEnv("REDIS_PASSWORD", "secret")
 
 	redisAddr := fmt.Sprintf("%s:%s", redisHost, redisPort)
 
