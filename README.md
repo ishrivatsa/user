@@ -29,7 +29,7 @@ There are different dependencies based on whether you want to run a built contai
 Use this command to pull the latest tagged version of the shipping service:
 
 ```bash
-docker pull gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
+docker pull gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0.0
 ```
 
 To build a docker container, run `docker build . -t vmwarecloudadvocacy/acmeshop-user:<tag>`.
@@ -54,9 +54,9 @@ The **user** service, either running inside a Docker container or as a stand-alo
 * **USERS_DB_PASSWORD**: The password to connect to the MongoDB database
 * **USERS_DB_HOST**: The host or IP on which MongoDB is active
 * **USERS_DB_PORT**: The port on which MongoDB is active
-* **REDIS_DB_HOST**: The host or IP on which RedisDB is active
-* **REDIS_DB_PORT**: The port on which RedisDB is active
-* **REDIS_DB_PASSWORD**: The password for RedisDB. This field must be provided else the value defaults to *secret*
+* **REDIS_HOST**: The host or IP on which RedisDB is active
+* **REDIS_PORT**: The port on which RedisDB is active
+* **REDIS_PASSWORD**: The password for RedisDB. This field must be provided else the value defaults to *secret*
 
 The Docker image is based on the Bitnami MiniDeb container. Use this commands to run the latest stable version of the payment service with all available parameters:
 
@@ -68,7 +68,7 @@ docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin
 docker run -d -p 6379:6379 -e REDIS_PASSWORD=secret --name redis bitnami/redis
 
 # Run the user service
-docker run -d -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -e REDIS_DB_HOST=0.0.0.0 -e REDIS_DB_PORT=6379 -e REDIS_DB_PASSWORD=secret -p 8083:8083 gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
+docker run -d -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -e REDIS_HOST=0.0.0.0 -e REDIS_PORT=6379 -e REDIS_PASSWORD=secret -p 8083:8083 gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0.0
 ```
 
 ## Available users
@@ -92,7 +92,8 @@ Returns the list of all users
 
 ```bash
 curl --request GET \
-  --url http://localhost:8081/users
+  --url http://localhost:8081/users \
+   -H 'Authorization: Bearer <TOKEN>'
 ```
 
 ```json
@@ -121,7 +122,9 @@ Returns details about a specific user id
 
 ```bash
 curl --request GET \
-  --url http://localhost:8081/users/5c61ed848d891bd9e8016899
+  --url http://localhost:8083/users/5c61ed848d891bd9e8016899 \
+    -H 'Authorization: Bearer <TOKEN>'
+  
 ```
 
 ```json
@@ -143,7 +146,7 @@ Authenticate and Login user
 
 ```bash
 curl --request POST \
-  --url http://localhost:8081/login \
+  --url http://localhost:8083/login \
   --header 'content-type: application/json' \
   --data '{ 
     "username": "username",
@@ -178,7 +181,7 @@ Request new access_token by using the `refresh_token`
 
 ```bash
 curl --request POST \
-  --url http://localhost:8081/refresh-token \
+  --url http://localhost:8083/refresh-token \
   --header 'content-type: application/json' \
   --data '{
     "refresh_token" : "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8yIiwidHlwIjoiSldUIn0.eyJleHAiOjE1NzA3NjM1NzksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.zwGB1340IVMLjMf_UnFC_rEeNdD131OGPcg_S0ea8DE"
@@ -209,7 +212,7 @@ Verify access_token
 
 ```bash
 curl --request POST \
-  --url http://localhost:8081/verify-token \
+  --url http://localhost:8083/verify-token \
   --header 'content-type: application/json' \
   --data '{
     "access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6InNpZ25pbl8xIiwidHlwIjoiSldUIn0.eyJVc2VybmFtZSI6ImVyaWMiLCJleHAiOjE1NzA3NjMyMjksInN1YiI6IjVkOTNlMTFjNmY4Zjk4YzlmYjI0ZGU0NiJ9.wrWsDNor28aWv6huKUHAuVyROGAXqjO5luPfa5K5NQI"
@@ -242,13 +245,24 @@ If the JWT is not valid (either expired or invalid signature) then the user is N
 }
 ```
 
+#### `POST /logout`
+
+Logout the user - Adds the access token to redis cache
+
+```
+curl -X POST \
+  http://localhost:8083/logout \
+  -H 'Authorization: Bearer <TOKEN>' 
+```
+
+
 #### `POST /register`
 
 Register/Create new user
 
 ```bash
 curl --request POST \
-  --url http://localhost:8081/register \
+  --url http://localhost:8083/register \
   --header 'content-type: application/json' \
   --data '{
     "username":"peterp",
