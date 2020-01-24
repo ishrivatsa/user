@@ -41,6 +41,8 @@ services:
            - REDIS_HOST=user-redis-db
            - REDIS_PORT=6379
            - REDIS_PASSWORD=secret
+           - JAEGER_AGENT_HOST=localhost
+           - JAEGER_AGENT_PORT=6831
        depends_on:
            - user-redis-db
            - user-db
