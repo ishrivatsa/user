@@ -17,17 +17,19 @@ services:
       tmpfs:
         - /tmp:rw,noexec,nosuid
     user-redis-db:
-      image: redis:5.0.3-alpine
+      image: bitnami/redis
       hostname: user-redis-db
       restart: always
       ports:
         - '6379:6379'
+      environment:
+        - REDIS_PASSWORD=secret
     user:
-       image: gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0
+       image: gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0.0
        hostname: users
        restart: always
        ports:
-         - '8081:8081'
+         - '8083:8083'
        cap_add:
            - NET_BIND_SERVICE
        environment:
@@ -35,6 +37,10 @@ services:
            - USERS_DB_PASSWORD=secret
            - USERS_DB_HOST=user-db
            - USERS_DB_PORT=27017
-           - USERS_PORT=8081
-           - REDIS_DB_HOST=user-redis-db
-           - REDIS_DB_PORT=6379
+           - USERS_PORT=8083
+           - REDIS_HOST=user-redis-db
+           - REDIS_PORT=6379
+           - REDIS_PASSWORD=secret
+       depends_on:
+           - user-redis-db
+           - user-db
