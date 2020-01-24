@@ -1,6 +1,6 @@
 # User
 
-[![gcr.io](https://img.shields.io/badge/gcr.io-v2.0-green?style=flat-square)](https://console.cloud.google.com/gcr/images/vmwarecloudadvocacy/GLOBAL/acmeshop-user@sha256:9853344bb335df2900de8d5454ada13422de62c8b72852564688d522fda9290d/details?tab=info)
+[![gcr.io](https://img.shields.io/badge/gcr.io-stable-green?style=flat-square)](https://console.cloud.google.com/gcr/images/vmwarecloudadvocacy/GLOBAL/acmeshop-user@sha256:9853344bb335df2900de8d5454ada13422de62c8b72852564688d522fda9290d/details?tab=info)
 
 > A user service, because what is a shop without users to buy our awesome red pants?
 
@@ -29,7 +29,7 @@ There are different dependencies based on whether you want to run a built contai
 Use this command to pull the latest tagged version of the shipping service:
 
 ```bash
-docker pull gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0.0
+docker pull gcr.io/vmwarecloudadvocacy/acmeshop-user:stable
 ```
 
 To build a docker container, run `docker build . -t vmwarecloudadvocacy/acmeshop-user:<tag>`.
@@ -57,18 +57,20 @@ The **user** service, either running inside a Docker container or as a stand-alo
 * **REDIS_HOST**: The host or IP on which RedisDB is active
 * **REDIS_PORT**: The port on which RedisDB is active
 * **REDIS_PASSWORD**: The password for RedisDB. This field must be provided else the value defaults to *secret*
+* **JAEGER_AGENT_HOST**: The host for Jaeger agent - Use this only if you want tracing enabled
+* **JAEGER_AGENT_PORT**: The port for Jaeger agent - Use this only if you want tracing enabled
 
 The Docker image is based on the Bitnami MiniDeb container. Use this commands to run the latest stable version of the payment service with all available parameters:
 
 ```bash
 # Run the MongoDB container
-docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e      MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db
+docker run -d -p 27017:27017 --name mgo -e MONGO_INITDB_ROOT_USERNAME=mongoadmin -e MONGO_INITDB_ROOT_PASSWORD=secret -e MONGO_INITDB_DATABASE=acmefit gcr.io/vmwarecloudadvocacy/acmeshop-user-db:latest
 
 # Run the Redis container
 docker run -d -p 6379:6379 -e REDIS_PASSWORD=secret --name redis bitnami/redis
 
 # Run the user service
-docker run -d -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -e REDIS_HOST=0.0.0.0 -e REDIS_PORT=6379 -e REDIS_PASSWORD=secret -p 8083:8083 gcr.io/vmwarecloudadvocacy/acmeshop-user:2.0.0
+docker run -d -e USERS_HOST=0.0.0.0 -e USERS_PORT=8081 -e USERS_DB_USERNAME=mongoadmin -e USERS_DB_PASSWORD=secret -e USERS_DB_HOST=0.0.0.0 -e REDIS_HOST=0.0.0.0 -e REDIS_PORT=6379 -e REDIS_PASSWORD=secret -e JAEGER_AGENT_HOST=localhost -e JAEGER_AGENT_PORT=6831 -p 8083:8083 gcr.io/vmwarecloudadvocacy/acmeshop-user:stable
 ```
 
 ## Available users
@@ -92,7 +94,7 @@ Returns the list of all users
 
 ```bash
 curl --request GET \
-  --url http://localhost:8081/users \
+  --url http://localhost:8083/users \
    -H 'Authorization: Bearer <TOKEN>'
 ```
 
