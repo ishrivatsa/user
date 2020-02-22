@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	//stdopentracing "github.com/opentracing/opentracing-go"
-	//tracelog "github.com/opentracing/opentracing-go/log"
 	"github.com/globalsign/mgo/bson"
+	tracelog "github.com/opentracing/opentracing-go/log"
 	"github.com/vmwarecloudadvocacy/user/internal/auth"
 	"github.com/vmwarecloudadvocacy/user/internal/db"
 	"github.com/vmwarecloudadvocacy/user/internal/tracer"
@@ -112,23 +112,39 @@ func RefreshAccessToken(c *gin.Context) {
 // GetUsers accepts a context and returns all the users in json format
 func GetUsers(c *gin.Context) {
 	var users []auth.UserResponse
+	span, err := tracer.CreateTracerAndSpan("get_all_users", c)
+
+	if err != nil {
+		logger.Logger.Errorf(err.Error())
+	}
 
 	logger.Logger.Infof("Retrieving All Users")
 
 	error := db.Collection.Find(nil).All(&users)
 
 	if error != nil {
+		tracer.OnErrorLog(span, error)
 		message := "Users " + error.Error()
 		c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": message})
 		return
 	}
 
+	span.LogFields(
+		tracelog.String("event", "success"),
+		tracelog.Int("status", http.StatusOK),
+	)
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": users})
 }
 
 // GetUser accepts context, User ID as param and returns user info
 func GetUser(c *gin.Context) {
 	var user auth.UserResponse
+
+	span, err := tracer.CreateTracerAndSpan("get_user", c)
+
+	if err != nil {
+		logger.Logger.Errorf(err.Error())
+	}
 
 	userID := c.Param("id")
 
@@ -137,16 +153,25 @@ func GetUser(c *gin.Context) {
 		error := db.Collection.FindId(bson.ObjectIdHex(userID)).One(&user)
 
 		if error != nil {
+			tracer.OnErrorLog(span, error)
 			message := "User " + error.Error()
 			c.JSON(http.StatusNotFound, gin.H{"status": http.StatusNotFound, "message": message})
 			return
 		}
 	} else {
+		span.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", "Incorrect Format for UserID"),
+		)
 		message := "Incorrect Format for UserID"
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": message})
 		return
 	}
 
+	span.LogFields(
+		tracelog.String("event", "success"),
+		tracelog.Int("status", http.StatusOK),
+	)
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "data": user})
 }
 
@@ -191,7 +216,7 @@ func RegisterUser(c *gin.Context) {
 func LoginUser(c *gin.Context) {
 	var user auth.User
 
-	_, err := tracer.CreateTracerAndSpan("login", c)
+	span, err := tracer.CreateTracerAndSpan("login", c)
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -200,7 +225,7 @@ func LoginUser(c *gin.Context) {
 	err = c.ShouldBindJSON(&user)
 
 	if err != nil {
-		//	tracer.OnErrorLog(span, err)
+		tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusBadRequest, gin.H{"status": http.StatusBadRequest, "message": "Incorrect Field Name(s)"})
 		return
 	}
@@ -210,11 +235,7 @@ func LoginUser(c *gin.Context) {
 	err = db.Collection.Find(bson.M{"username": user.Username}).One(&user)
 
 	if err != nil {
-		// span.LogFields(
-		// 	tracelog.String("event", "error"),
-		// 	tracelog.String("message", err.Error()),
-		// )
-		//tracer.OnErrorLog(span, err)
+		tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Invalid Username"})
 		return
 	}
@@ -227,10 +248,16 @@ func LoginUser(c *gin.Context) {
 	accessToken, refreshToken, err := auth.GenerateTokenPair(user.Username, user.ID.Hex())
 	if err != nil || accessToken == "" || refreshToken == "" {
 		// Return if there is an error in creating the JWT return an internal server error
+		tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": "Could not generate token"})
 		return
 	}
 
+	span.LogFields(
+		tracelog.String("event", "success"),
+		tracelog.String("message", "returned token"),
+		tracelog.Int("status", http.StatusOK),
+	)
 	c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "access_token": accessToken, "refresh_token": refreshToken})
 
 }
@@ -238,8 +265,20 @@ func LoginUser(c *gin.Context) {
 // LogoutUser Method
 func LogoutUser(c *gin.Context) {
 
+	span, err := tracer.CreateTracerAndSpan("logout", c)
+
+	if err != nil {
+		logger.Logger.Errorf(err.Error())
+		//fmt.Println(err.Error())
+	}
+
 	token := c.GetHeader("Authorization")
+
 	if token == "" {
+		span.LogFields(
+			tracelog.String("event", "error"),
+			tracelog.String("message", "Authorization token was not provided"),
+		)
 		logger.Logger.Errorf("Authorization token was not provided")
 		c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Authorization Token is required"})
 		c.Abort()
@@ -248,13 +287,18 @@ func LogoutUser(c *gin.Context) {
 
 	extractedToken := strings.Split(token, "Bearer ")
 
-	err := auth.InvalidateToken(extractedToken[1])
+	err = auth.InvalidateToken(extractedToken[1])
 	if err != nil {
+		tracer.OnErrorLog(span, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": http.StatusInternalServerError, "message": err.Error()})
 		c.Abort()
 		return
 	}
 
+	span.LogFields(
+		tracelog.String("event", "success"),
+		tracelog.Int("status", http.StatusAccepted),
+	)
 	c.JSON(http.StatusAccepted, gin.H{"status": http.StatusAccepted, "message": "Done"})
 
 }
